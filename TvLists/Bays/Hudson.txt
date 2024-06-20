@@ -1,0 +1,2 @@
+192.168.50.147 0 RK HudsonLeft
+192.168.50.175 0 RK HudsonRight

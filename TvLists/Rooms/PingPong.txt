@@ -1,0 +1,3 @@
+192.168.50.156 38:64:07:D1:97:74 AND PingPongNorth
+192.168.50.155 0 RK PingPongMiddle
+192.168.50.219 0 RK PingPongSouth

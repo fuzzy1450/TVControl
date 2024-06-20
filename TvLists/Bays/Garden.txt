@@ -1,0 +1,2 @@
+192.168.50.180 0 RK GardenLeft
+192.168.50.153 0 RK GardenRight
