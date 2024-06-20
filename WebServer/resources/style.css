@@ -1,0 +1,160 @@
+
+.container {
+	min-width: 1500px;
+	width:95%;
+	height: 300px;
+	margin: auto;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	
+}
+
+.TV-Container-rev {
+	display: flex;
+	flex-direction: row-reverse;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-end;
+	align-content: flex-end;
+	margin-left:5px;
+	margin-right:5px;
+}
+
+.TV-Container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-end;
+	align-content: flex-end;
+	flex-basis: 100%;
+	margin-left:5px;
+	margin-right:5px;
+}
+
+.TV {
+	width:75px;
+	height:75px;
+	border: 1px solid black;
+	margin: 1px;
+	color: black;
+	font-size:30px;
+}
+
+.off {
+	background-color: red;
+}
+
+.on {
+	background-color: green;
+}
+
+
+.Group {
+	border: 2px solid #524C42;
+	margin: 5px;
+	display: flex;
+	height: 275px;
+	min-width: 150px;
+	flex-direction: column;
+	background-color: #E2DFD0;
+	color: #F97300;
+}
+
+.ControlPanel {
+	display: flex;
+	position:relative;
+	margin-left:auto;
+	margin-right:auto;
+	z-index:2;
+	flex-wrap: wrap;
+	height:25px;
+	margin-bottom:5px;
+}
+
+.not_supported_Group {
+	background-color: black;
+	color: red;
+	height:100%;
+}
+
+.not_supported_TV {
+	background-color: black;
+	color: red;
+	width:75px;
+	height:75px;
+	border: 1px solid black;
+	margin: 1px;
+	font-size:16px;
+}
+.not_supported_TV::after {
+	content:' not supported';
+}
+
+h2 {
+	display: flex;
+	text-align: center;
+	margin-left:auto;
+	margin-right:auto;
+
+}
+
+button {
+	width: 50%;
+	height: 50px;
+}
+
+.flex-col-rev {
+	display: flex;
+	flex-direction: column-reverse;
+}
+.flex-row {
+	display: flex;
+}
+
+.flex-row-rev {
+	display: flex;
+	flex-direction:row-reverse;
+}
+
+.flex-col {
+	display: flex;
+	flex-direction: column;
+}
+
+#GolfBays {
+	align-items: flex-start;
+}
+
+body {
+	background-color: #32012F;
+}
+
+
+.popup{
+	z-index:50;
+	position:fixed;	
+}
+
+#Loading{
+	display: none;
+	border: 2px solid #524C42;
+	background-color: #E2DFD0;
+	left:50px;
+	bottom:50px;
+	width:75px;
+	height:75px;
+}
+
+#Loading img {
+	width:75px;
+	height:75px;
+}
+
+#AllPanel {
+	left:45%;
+	bottom:125px;
+	height:150px;
+}

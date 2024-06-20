@@ -1,0 +1,1 @@
+powershell -command "bash /mnt/c/RokuControl/RokuStartup.sh %1" > "C:\RokuControl\WebServer\logs\o.log"

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="./resources/style.css">
+</head>
+
+
+<body onload="initStatusRefresh()">
+
+<!--	<button id="dbg" onclick="apiRequest('TVs', 'FrontDesk4', 'GetStatus')">debug:TVs//FrontDesk4//GetStatus</button> -->
+	<div class="popup" id="Loading">
+		<img src="./resources/Loading.gif">
+	</div>
+	
+	<div class="Group popup" id="AllPanel">
+		<h2>All Displays</h2>
+		<div class="ControlPanel">
+			<button class="on_btn" onclick="apiRequest('All', '', 'PowerOn')">On</button>
+			<button class="off_btn" onclick="apiRequest('All', '', 'PowerOff')">Off</button>
+		</div>
+	</div>
+
+
+	<div class="container" id="Rooms">
+		<div class="Group" id="FrontDesk">
+			<h2>Front Desk</h2>
+			<div class="ControlPanel">
+				<button class="on_btn" onclick="apiRequest('Rooms', 'FrontDesk', 'PowerOn')">On</button>
+				<button class="off_btn" onclick="apiRequest('Rooms', 'FrontDesk', 'PowerOff')">Off</button>
+			</div>
+			<div class="TV-Container-rev">
+				<div class="flex-row-rev">
+					<div id="FrontDesk1" class="TV off" title="FrontDesk1">1</div>
+					<div id="FrontDesk2" class="TV off" title="FrontDesk2">2</div>
+				</div>
+				<div class="flex-col-rev">
+					<div id="FrontDesk3" class="TV off" title="FrontDesk3">3</div>
+					<div id="FrontDesk4" class="TV off" title="FrontDesk4">4</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="Group" id="BoardGame">
+			<h2>Board Games</h2>
+			<div class="ControlPanel">
+				<button class="on_btn" onclick="apiRequest('Rooms', 'BoardGame', 'PowerOn')">On</button>
+				<button class="off_btn" onclick="apiRequest('Rooms', 'BoardGame', 'PowerOff')">Off</button>
+			</div>
+			<div class="TV-Container" style="margin-bottom: 20px;">
+				<div id="BoardGameWest" class="TV off" title="BoardGameWest">West</div>
+				<div id="BoardGameEast" class="TV off" title="BoardGameEast">East</div>
+			</div>
+		</div>
+		
+		<div class="Group" id="PingPong">
+			<h2>PingPong</h2>
+			<div class="ControlPanel">
+				<button class="on_btn" onclick="apiRequest('Rooms', 'PingPong', 'PowerOn')">On</button>
+				<button class="off_btn" onclick="apiRequest('Rooms', 'PingPong', 'PowerOff')">Off</button>
+			</div>
+			<div class="TV-Container" style="margin-bottom: 20px;">
+				<div class="flex-row-rev">
+					<div id="PingPongNorth" class="TV off" title="PingPongNorth">N</div>
+					<div id="PingPongMiddle" class="TV off" title="PingPongMiddle">Mid</div>
+					<div id="PingPongSouth" class="TV off" title="PingPongSouth">S</div>
+				</div>
+			</div>
+		</div>
+		
+		
+		<div class="Group" id="Bowling">
+			<h2>Bowling</h2>
+			<div class="ControlPanel">
+				<button class="on_btn" onclick="apiRequest('Rooms', 'Bowling', 'PowerOn')">On</button>
+				<button class="off_btn" onclick="apiRequest('Rooms', 'Bowling', 'PowerOff')">Off</button>
+			</div>
+			<div class="TV-Container" style="align-items: baseline;">
+				<div class="flex-col-rev">
+					<div id="BowlingLeft" class="TV off" title="BowlingLeft">L</div>
+					<div id="BowlingMiddle1" class="not_supported_TV" title="BowlingMiddle1">1</div>
+				</div>
+				<div class="flex-row">
+					<div id="BowlingMiddle2" class="not_supported_TV" title="BowlingMiddle2">2</div>
+					<div id="BowlingMiddle3" class="not_supported_TV" title="BowlingMiddle3">3</div>
+				</div>
+				<div class="flex-col" style="align-self: end;">
+				<div id="BowlingMiddle4" class="TV off" title="BowlingMiddle4">4</div>
+				<div id="BowlingRight" class="TV off" title="BowlingRight">R</div>
+				</div>
+			</div>
+			
+		</div>
+	
+	
+		<div class="Group" id="PartyRoom">
+			<h2>Party Room</h2>
+			<div class="ControlPanel">
+				<button class="on_btn" onclick="apiRequest('Rooms', 'PartyRoom', 'PowerOn')">On</button>
+				<button class="off_btn" onclick="apiRequest('Rooms', 'PartyRoom', 'PowerOff')">Off</button>
+			</div>
+			<div class="TV-Container" style="margin-bottom: 20px;">
+				<div id="PartyRoomTV" class="TV off" title="PartyRoomTV">1</div>
+			</div>
+		</div>
+		
+		<div class="Group" id="PoolHall">
+			<h2>Pool Hall</h2>
+			<div class="ControlPanel">
+				<button class="on_btn" onclick="apiRequest('Rooms', 'PoolHall', 'PowerOn')">On</button>
+				<button class="off_btn" onclick="apiRequest('Rooms', 'PoolHall', 'PowerOff')">Off</button>
+			</div>
+			<div class="TV-Container" style="margin-bottom: 20px;">
+				<div id="PoolHallWest" class="TV off" title="PoolHallWest">West</div>
+				<div id="PoolHallSignage" class="TV off" title="PoolHallSignage">Sign</div>
+				<div id="PoolHallEast" class="TV off" title="PoolHallEast">East</div>
+			</div>
+		</div>
+	
+	</div>	
+	<div class="container" id="GolfBays">
+		<div class="flex-col-rev">
+			<div class="Group" id="Hudson">
+				<h2>Hudson</h2>
+				<div class="ControlPanel">
+					<button class="on_btn" onclick="apiRequest('Bays', 'Hudson', 'PowerOn')">On</button>
+					<button class="off_btn" onclick="apiRequest('Bays', 'Hudson', 'PowerOff')">Off</button>
+				</div>
+				<div class="TV-Container" style="margin-bottom: 20px;">
+					<div class="flex-row">
+						<div id="HudsonLeft" class="TV off" title="HudsonLeft">L</div>
+						<div id="HudsonProjector" class="not_supported_TV" title="HudsonProjector">Projector</div>
+						<div id="HudsonRight" class="TV off" title="HudsonRight">R</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			<div class="Group" id="Garden">
+				<h2>Garden</h2>
+				<div class="ControlPanel">
+					<button class="on_btn" onclick="apiRequest('Bays', 'Garden', 'PowerOn')">On</button>
+					<button class="off_btn" onclick="apiRequest('Bays', 'Garden', 'PowerOff')">Off</button>
+				</div>
+				<div class="TV-Container" style="margin-bottom: 20px;">
+					<div class="flex-row">
+						<div id="GardenLeft" class="TV off" title="GardenLeft">L</div>
+						<div id="GardenProjector" class="not_supported_TV" title="GardenProjector">Projector</div>
+						<div id="GardenRight" class="TV off" title="GardenRight">R</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+		<div class="flex-row">
+			<div class="Group" id="Willow">
+				<h2>Willow</h2>
+				<div class="ControlPanel not_supported_Group">
+					TVs Not Supported
+				</div>
+			</div>
+		
+		
+			<div class="Group" id="Clinton">
+				<h2>Clinton</h2>
+				<div class="ControlPanel not_supported_Group">
+					TVs Not Supported
+				</div>
+			</div>
+			
+			
+			<div class="Group" id="Madison">
+				<h2>Madison</h2>
+				<div class="ControlPanel">
+					<button class="on_btn" onclick="apiRequest('Bays', 'Madison', 'PowerOn')">On</button>
+					<button class="off_btn" onclick="apiRequest('Bays', 'Madison', 'PowerOff')">Off</button>
+				</div>
+				<div class="TV-Container" style="margin-bottom: 20px;">
+					<div class="flex-row">
+						<div id="MadisonLeft" class="TV off" title="MadisonLeft">L</div>
+						<div id="MadisonProjector" class="not_supported_TV" title="MadisonProjector">Projector</div>
+						<div id="MadisonRight" class="TV off" title="MadisonRight">R</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="flex-col">
+			<div class="Group" id="Monroe">
+				<h2>Monroe</h2>
+				<div class="ControlPanel">
+					<button class="on_btn" onclick="apiRequest('Bays', 'Monroe', 'PowerOn')">On</button>
+					<button class="off_btn" onclick="apiRequest('Bays', 'Monroe', 'PowerOff')">Off</button>
+				</div>
+				<div class="TV-Container" style="margin-bottom: 20px;">
+					<div class="flex-row">
+						<div id="MonroeLeft" class="TV off" title="MonroeLeft">L</div>
+						<div id="MonroeProjector" class="not_supported_TV" title="MonroeProjector">Projector</div>
+						<div id="MonroeRight" class="TV off" title="MonroeRight">R</div>
+					</div>
+				</div>
+			</div>
+			
+			
+			<div class="Group" id="Jackson">
+				<h2>Jackson</h2>
+				<div class="ControlPanel">
+					<button class="on_btn" onclick="apiRequest('Bays', 'Jackson', 'PowerOn')">On</button>
+					<button class="off_btn" onclick="apiRequest('Bays', 'Jackson', 'PowerOff')">Off</button>
+				</div>
+				<div class="TV-Container" style="margin-bottom: 20px;">
+					<div class="flex-row">
+						<div id="JacksonLeft" class="TV off" title="JacksonLeft">L</div>
+						<div id="JacksonProjector" class="not_supported_TV" title="JacksonProjector">Projector</div>
+						<div id="JacksonRight" class="TV off" title="JacksonRight">R</div>
+					</div>
+				</div>
+			</div>
+		
+		</div>
+	</div>
+	
+</body>
+
+<script src="resources/client.js"></script>
+
+</html>
