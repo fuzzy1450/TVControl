@@ -1,0 +1,8 @@
+etc/*
+! etc/adb_lock
+! etc/writeback_lock
+! etc/android-platform-tools/
+etc/android-platform-tools/*
+
+WebServer/node_modules/*
+WebServer/logs/*

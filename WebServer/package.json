@@ -1,0 +1,16 @@
+{
+  "name": "playhobokencontrol",
+  "version": "0.5.0",
+  "description": "Webserver that provides visual control of displays in PlayHoboken",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "author": "Evan Kupsch",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "html": "^1.0.0"
+  }
+}
