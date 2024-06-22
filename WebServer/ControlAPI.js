@@ -153,15 +153,6 @@ class VizioTV extends TV {
 		this.ChangeInputRequestData = {"REQUEST": "MODIFY","VALUE": inputName,"HASHVAL": inputHashVal}
 	}
 	
-	dbg(cb, cmd_url){
-		axios.get('https://'+this.IP+':7345'+cmd_url,  {headers:{"AUTH":this.AuthKey}})
-		.then(function (res){
-			if(res.status == 200){	
-				console.log(res.data)
-			}
-		})
-	}
-	
 	
 	PowerOn(cb, retries=5){
 		
