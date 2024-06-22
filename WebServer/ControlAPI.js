@@ -169,7 +169,7 @@ class VizioTV extends TV {
 		this.GetStatus()
 		.then(function(res){
 			if(!res.powerState){
-				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
+				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
@@ -178,7 +178,7 @@ class VizioTV extends TV {
 						if(retries > 0){
 							PowerOn(cb, retries-1)
 						} else {
-							throw new Error("Failed to turn on TV "+this.DeviceName+" - max retries reached")
+							throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
 				}).catch(function (err){
@@ -217,7 +217,7 @@ class VizioTV extends TV {
 		this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
-				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
+				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
