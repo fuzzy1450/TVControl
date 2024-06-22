@@ -259,7 +259,6 @@ class VizioTV extends TV {
 }
 
 
-
 const FilePaths = {
 	All: "/mnt/c/RokuControl/TvLists/All.txt",
 	Bays: {
