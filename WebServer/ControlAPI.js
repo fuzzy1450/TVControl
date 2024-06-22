@@ -168,7 +168,7 @@ class VizioTV extends TV {
 		let TVOBJ = this
 		this.GetStatus()
 		.then(function(res){
-			if(!res.powerState){
+			if(!res){
 				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
@@ -216,7 +216,7 @@ class VizioTV extends TV {
 		let TVOBJ = this
 		this.GetStatus()
 		.then(function(res){
-			if(res.powerState){
+			if(res){
 				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
