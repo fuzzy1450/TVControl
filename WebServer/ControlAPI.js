@@ -198,7 +198,7 @@ class VizioTV extends TV {
 		axios.put('https://'+this.IP+':7345/menu_native/dynamic/tv_settings/devices/current_input', this.ChangeInputRequestData,  {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
 			if(res.status == 200){
-				this.powerState=0
+				return 1
 			} else {
 				if(retries > 0){
 					LaunchApp(retries-1)
