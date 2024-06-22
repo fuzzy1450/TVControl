@@ -60,14 +60,41 @@ class RokuTV extends TV {
 		axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
-				return 
+				if(this.StartupPluginID!=0){
+					this.LaunchApp(this.StartupPluginID)
+				} 
+				cb.send({powerState:1})
+			
 			} else {
-				PowerOn(cb, retries-1)
+				if(retries > 0){
+					return PowerOn(cb, retries-1)
+				} else {
+					throw new Error("Failed to turn on TV "+this.DeviceName+" - max retries reached")
+				}
 			}
 		}).catch(function(err){
 				console.log(err)
-		}).finally(function(res){
-				cb.send({powerState:1})
+				cb.send({powerState:0})
+		})
+		
+		
+		
+	}
+	
+	LaunchApp(appID, retries=5){
+		axios.post('http://'+this.IP+':8060/launch/'+StartupPluginID)
+		.then(function (res){
+			if(res.status == 200){
+				return 1
+			} else {
+				if (retries>0){
+					return LaunchApp(cb, appID, retries-1)
+				} else {
+					throw new Error("Failed to launch app on device "+this.DeviceName+" - max retries reached")
+				}
+			}
+		}).catch(function(err){
+			console.log(err)
 		})
 	}
 	
@@ -77,7 +104,11 @@ class RokuTV extends TV {
 			if(res.status == 200){
 				return;
 			} else {
-				PowerOff(cb, retries-1)
+				if (retries>0){
+					return PowerOff(cb, retries-1)
+				} else {
+					throw new Error("Failed to turn off TV "+this.DeviceName+" - max retries reached")
+				}
 			}
 		}).catch(function(err){
 				console.log(err)
@@ -106,6 +137,7 @@ class RokuTV extends TV {
 	}
 	
 }
+
 
 
 const FilePaths = {
