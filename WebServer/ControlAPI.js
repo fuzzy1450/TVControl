@@ -146,54 +146,95 @@ class RokuTV extends TV {
 }
 
 class VizioTV extends TV {
-	constructor(IP, DeviceName, AuthKey){
+	constructor(IP, DeviceName, AuthKey, inputName, inputHashVal){
 		super(IP, DeviceName)
 		this.AuthKey=AuthKey
 		this.powerState=0
-		this.statMutex=1
+		this.ChangeInputRequestData = {"REQUEST": "MODIFY","VALUE": inputName,"HASHVAL": inputHashVal}
 	}
 	
 	dbg(cb, cmd_url){
-		axios.put('https://'+this.IP+':7345'+cmd_url,  {headers:{"AUTH":this.AuthKey}})
+		axios.get('https://'+this.IP+':7345'+cmd_url,  {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
 			if(res.status == 200){	
-				cb.send(res)
+				console.log(res.data)
 			}
 		})
 	}
 	
 	
 	PowerOn(cb, retries=5){
+		
+		TVOBJ = this
+		this.GetStatus()
+		.then(function(res){
+			if(!res.powerState){
+				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
+				.then(function (res){
+					if(res.status == 200){
+						this.powerState=0
+						cb.send({powerState:this.powerState})
+					} else {
+						if(retries > 0){
+							PowerOn(cb, retries-1)
+						} else {
+							throw new Error("Failed to turn on TV "+this.DeviceName+" - max retries reached")
+						}
+					}
+				}).catch(function (err){
+					console.log(err)
+					cb.send({powerState:this.powerState})
+				})
+			} else {
+				cb.send({powerState:this.powerState})
+			}
+		})
+		.finally(){
+				TVOBJ.LaunchApp()
+		}
 	}
 	
-	LaunchApp(appID, retries=5){
-		
+	LaunchApp(retries=5){
+		axios.put('https://'+this.IP+':7345/menu_native/dynamic/tv_settings/devices/current_input', this.ChangeInputRequestData,  {headers:{"AUTH":this.AuthKey}})
+		.then(function (res){
+			if(res.status == 200){
+				this.powerState=0
+			} else {
+				if(retries > 0){
+					LaunchApp(retries-1)
+				} else {
+					throw new Error("Failed to change input for TV "+this.DeviceName+" - max retries reached")
+				}
+			}
+		}).catch(function (err){
+			console.log(err)
+		})
 	}
 	
 	PowerOff(cb, retries=5){
-		pwr=GetStatus()
-		if(pwr){ 
-			axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
-			.then(function (res){
-				if(res.status == 200){
-					this.powerState=0
-					cb.send({powerState:this.powerState})
-				} else {
-					if(retries > 0){
-						PowerOff(cb, retries-1)
+		this.GetStatus()
+		.then(function(res){
+			if(res.powerState){
+				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
+				.then(function (res){
+					if(res.status == 200){
+						this.powerState=0
+						cb.send({powerState:this.powerState})
 					} else {
-						throw new Error("Failed to turn off TV "+this.DeviceName+" - max retries reached")
+						if(retries > 0){
+							PowerOff(cb, retries-1)
+						} else {
+							throw new Error("Failed to turn off TV "+this.DeviceName+" - max retries reached")
+						}
 					}
-				}
-			}).catch(function (err){
-				console.log(err)
+				}).catch(function (err){
+					console.log(err)
+					cb.send({powerState:this.powerState})
+				})
+			} else {
 				cb.send({powerState:this.powerState})
-			})
-		} else {
-			cb.send({powerState:this.powerState})
-		}
-		
-		
+			}
+		})
 	}
 
 
@@ -322,7 +363,7 @@ const Control = {
 		JacksonRight: new TV(...FilePaths.TVs.JacksonRight),
 		
 		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0),
-		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td")
+		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td", "HDMI-3", "3487409261")
 		
 	}
 	
