@@ -169,7 +169,7 @@ class VizioTV extends TV {
 		this.GetStatus()
 		.then(function(res){
 			if(!res.powerState){
-				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
+				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
@@ -195,6 +195,7 @@ class VizioTV extends TV {
 	}
 	
 	LaunchApp(retries=5){
+		let TVOBJ = this
 		axios.put('https://'+this.IP+':7345/menu_native/dynamic/tv_settings/devices/current_input', this.ChangeInputRequestData,  {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
 			if(res.status == 200){
@@ -203,7 +204,7 @@ class VizioTV extends TV {
 				if(retries > 0){
 					LaunchApp(retries-1)
 				} else {
-					throw new Error("Failed to change input for TV "+this.DeviceName+" - max retries reached")
+					throw new Error("Failed to change input for TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
 		}).catch(function (err){
@@ -216,7 +217,7 @@ class VizioTV extends TV {
 		this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
-				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
+				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
@@ -225,7 +226,7 @@ class VizioTV extends TV {
 						if(retries > 0){
 							PowerOff(cb, retries-1)
 						} else {
-							throw new Error("Failed to turn off TV "+this.DeviceName+" - max retries reached")
+							throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
 				}).catch(function (err){
