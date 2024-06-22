@@ -172,7 +172,7 @@ class VizioTV extends TV {
 				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
-						TVOBJ.powerState=0
+						TVOBJ.powerState=1
 						cb.send({powerState:TVOBJ.powerState})
 					} else {
 						if(retries > 0){
