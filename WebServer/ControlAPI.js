@@ -189,9 +189,9 @@ class VizioTV extends TV {
 				cb.send({powerState:this.powerState})
 			}
 		})
-		.finally(){
+		.finally(function(){
 				TVOBJ.LaunchApp()
-		}
+		})
 	}
 	
 	LaunchApp(retries=5){
