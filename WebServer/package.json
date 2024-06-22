@@ -9,6 +9,7 @@
   "author": "Evan Kupsch",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.2",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "html": "^1.0.0"
