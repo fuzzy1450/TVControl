@@ -1,5 +1,12 @@
 const { spawnSync } = require('child_process');
-const axios = require('axios');
+
+
+const ax = require('axios');
+const axios = ax.create({
+  httpsAgent: new https.Agent({  
+    rejectUnauthorized: false
+  })
+});
 
 const ScriptType = {
 	START: "Startup",
@@ -138,54 +145,83 @@ class RokuTV extends TV {
 	
 }
 
-class Vizio extends TV {
+class VizioTV extends TV {
 	constructor(IP, DeviceName, AuthKey){
 		super(IP, DeviceName)
 		this.AuthKey=AuthKey
-		this.PowerState=0
+		this.powerState=0
 		this.statMutex=1
 	}
 	
+	dbg(cb, cmd_url){
+		axios.put('https://'+this.IP+':7345'+cmd_url,  {headers:{"AUTH":this.AuthKey}})
+		.then(function (res){
+			if(res.status == 200){	
+				cb.send(res)
+			}
+		})
+	}
 	
 	
 	PowerOn(cb, retries=5){
 	}
 	
 	LaunchApp(appID, retries=5){
+		
 	}
 	
 	PowerOff(cb, retries=5){
-	}
-	
-	UpdateStatus(){
-		axios.get('https://'+this.IP+':7345/state/device/power_mode', {headers:{"AUTH":this.AuthKey}})
-		.then(function (res){
-			if(res.status == 200){
-				if(res.data.includes('"VALUE":1')){
-					this.powerState=1
-				} else {
+		pwr=GetStatus()
+		if(pwr){ 
+			axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
+			.then(function (res){
+				if(res.status == 200){
 					this.powerState=0
+					cb.send({powerState:this.powerState})
+				} else {
+					if(retries > 0){
+						PowerOff(cb, retries-1)
+					} else {
+						throw new Error("Failed to turn off TV "+this.DeviceName+" - max retries reached")
+					}
 				}
-			} else {
-				this.powerState=0
-			}
-		}).catch(function(err){
+			}).catch(function (err){
 				console.log(err)
-				this.powerState=0
-		})
-		this.statMutex++
-	}
-
-	GetStatus(cb){
-		this.statMutex-- 
-		UpdateStatus()
-		while(!this.statMutex){
-			{}
+				cb.send({powerState:this.powerState})
+			})
+		} else {
+			cb.send({powerState:this.powerState})
 		}
 		
-		cb.send // todo pick up here
+		
 	}
-	
+
+
+	GetStatus(cb){
+		let TVOBJ = this
+		return axios.get('https://'+this.IP+':7345/state/device/power_mode', {headers:{"AUTH":this.AuthKey}})
+		.then(function (res){
+			if(res.status == 200){
+				if(res.data.ITEMS[0].VALUE==1){
+					TVOBJ.powerState = 1
+					return 1
+				} else {
+					TVOBJ.powerState = 0
+					return 0
+				}
+			} else {
+				TVOBJ.powerState = 0
+				return 0
+			}
+		}).catch(function(err){
+			console.log(err)
+		}).finally(function(res){
+			if(cb){
+				cb.send({powerState:this.powerState})
+			}
+			return TVOBJ.powerState
+		})
+	}
 }
 
 
@@ -285,7 +321,8 @@ const Control = {
 		JacksonLeft: new TV(...FilePaths.TVs.JacksonLeft),
 		JacksonRight: new TV(...FilePaths.TVs.JacksonRight),
 		
-		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0)
+		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0),
+		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td")
 		
 	}
 	
