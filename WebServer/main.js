@@ -22,7 +22,7 @@ app.post('/api/All/:RequestType', (req, res) => {
 	ObjClass = "All"
 	ReqType = req.params.RequestType
 	console.log("["+req.ip+"] Requested " + ReqType + " for " + ObjClass + "//" + ObjClass)
-	res.send(TvAPI.Control[ObjClass][ReqType]())
+	TvAPI.Control[ObjClass][ReqType](res)
 	
 	
 	console.debug("Answered Request for "+ ObjClass + "//" + ObjClass)	
@@ -32,7 +32,6 @@ app.post('/api/All/:RequestType', (req, res) => {
 app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	rqID = requestCounter++
 	console.time("Req#"+String(rqID))
-	
 	
 	ObjClass = req.params.className
 	ObjName = req.params.objName

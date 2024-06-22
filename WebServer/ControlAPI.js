@@ -92,19 +92,17 @@ class RokuTV extends TV {
 		.then(function (res){
 			if(res.status == 200){
 				if(res.data.includes("PowerOn")){
-					return 1
+					cb.send({powerState:1})
 				} else {
-					return 0
+					cb.send({powerState:0})
 				}
 			} else {
-				return 0
+				cb.send({powerState:0})
 			}
 		}).catch(function(err){
 				console.log(err)
-				return 0;
-		}).finally(function(res){
-				cb.send({powerState:res})
-		});
+				cb.send({powerState:0});
+		})
 	}
 	
 }
