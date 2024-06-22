@@ -258,6 +258,9 @@ class VizioTV extends TV {
 	}
 }
 
+class AndroidTV extends TV {
+	
+}
 
 const FilePaths = {
 	All: "/mnt/c/RokuControl/TvLists/All.txt",
