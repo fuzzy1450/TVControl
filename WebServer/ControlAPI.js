@@ -138,6 +138,56 @@ class RokuTV extends TV {
 	
 }
 
+class Vizio extends TV {
+	constructor(IP, DeviceName, AuthKey){
+		super(IP, DeviceName)
+		this.AuthKey=AuthKey
+		this.PowerState=0
+		this.statMutex=1
+	}
+	
+	
+	
+	PowerOn(cb, retries=5){
+	}
+	
+	LaunchApp(appID, retries=5){
+	}
+	
+	PowerOff(cb, retries=5){
+	}
+	
+	UpdateStatus(){
+		axios.get('https://'+this.IP+':7345/state/device/power_mode', {headers:{"AUTH":this.AuthKey}})
+		.then(function (res){
+			if(res.status == 200){
+				if(res.data.includes('"VALUE":1')){
+					this.powerState=1
+				} else {
+					this.powerState=0
+				}
+			} else {
+				this.powerState=0
+			}
+		}).catch(function(err){
+				console.log(err)
+				this.powerState=0
+		})
+		this.statMutex++
+	}
+
+	GetStatus(cb){
+		this.statMutex-- 
+		UpdateStatus()
+		while(!this.statMutex){
+			{}
+		}
+		
+		cb.send // todo pick up here
+	}
+	
+}
+
 
 
 const FilePaths = {
