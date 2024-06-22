@@ -1,4 +1,5 @@
 const { spawnSync } = require('child_process');
+const axios = require('axios');
 
 const ScriptType = {
 	START: "Startup",
@@ -31,22 +32,81 @@ class ControlArea {
 }
 
 class TV {
-	constructor(FilePath, name){
-		this.FilePath=FilePath
-		this.name=name
+	constructor(IP, DeviceName){
+		this.IP = IP
+		this.DeviceName=DeviceName
 	}
 	
 	PowerOn(){
-		return RunScript(ScriptType.START, this.FilePath)
+		console.log("PowerOn not implemented for " + this.DeviceName)
 	}
 
 	PowerOff(){
-		return RunScript(ScriptType.STOP, this.FilePath)
+		console.log("PowerOff not implemented for " + this.DeviceName)
 	}
 	
 	GetStatus(){
-		return RunScript(ScriptType.STATUS, this.FilePath)
+		console.log("GetStatus not implemented for " + this.DeviceName)
 	}
+}
+
+class RokuTV extends TV {
+	constructor(IP, DeviceName, StartupPluginID){
+		super(IP, DeviceName)
+		this.StartupPluginID=StartupPluginID
+	}
+	
+	PowerOn(cb, retries=5){
+		axios.post('http://'+this.IP+':8060/keypress/PowerOn')
+		.then(function (res){
+			if(res.status == 200){
+				return 
+			} else {
+				PowerOn(cb, retries-1)
+			}
+		}).catch(function(err){
+				console.log(err)
+		}).finally(function(res){
+				cb.send({powerState:1})
+		})
+	}
+	
+	PowerOff(cb, retries=5){
+		axios.post('http://'+this.IP+':8060/keypress/PowerOff')
+		.then(function (res){
+			if(res.status == 200){
+				return;
+			} else {
+				PowerOff(cb, retries-1)
+			}
+		}).catch(function(err){
+				console.log(err)
+				return;
+		}).finally(function(res){
+				cb.send({powerState:0})
+		})
+	}
+
+	GetStatus(cb){
+		axios.get('http://'+this.IP+':8060/query/device-info')
+		.then(function (res){
+			if(res.status == 200){
+				if(res.data.includes("PowerOn")){
+					return 1
+				} else {
+					return 0
+				}
+			} else {
+				return 0
+			}
+		}).catch(function(err){
+				console.log(err)
+				return 0;
+		}).finally(function(res){
+				cb.send({powerState:res})
+		});
+	}
+	
 }
 
 
@@ -143,7 +203,9 @@ const Control = {
 		MonroeLeft: new TV(...FilePaths.TVs.MonroeLeft),
 		MonroeRight: new TV(...FilePaths.TVs.MonroeRight),
 		JacksonLeft: new TV(...FilePaths.TVs.JacksonLeft),
-		JacksonRight: new TV(...FilePaths.TVs.JacksonRight)
+		JacksonRight: new TV(...FilePaths.TVs.JacksonRight),
+		
+		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0)
 		
 	}
 	
