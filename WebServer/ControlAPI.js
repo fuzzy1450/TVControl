@@ -1,5 +1,5 @@
 const { spawnSync } = require('child_process');
-
+const https = require('https')
 
 const ax = require('axios');
 const axios = ax.create({
@@ -217,7 +217,7 @@ class VizioTV extends TV {
 			console.log(err)
 		}).finally(function(res){
 			if(cb){
-				cb.send({powerState:this.powerState})
+				cb.send({powerState:TVOBJ.powerState})
 			}
 			return TVOBJ.powerState
 		})
