@@ -172,8 +172,8 @@ class VizioTV extends TV {
 				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
-						this.powerState=0
-						cb.send({powerState:this.powerState})
+						TVOBJ.powerState=0
+						cb.send({powerState:TVOBJ.powerState})
 					} else {
 						if(retries > 0){
 							PowerOn(cb, retries-1)
@@ -183,10 +183,10 @@ class VizioTV extends TV {
 					}
 				}).catch(function (err){
 					console.log(err)
-					cb.send({powerState:this.powerState})
+					cb.send({powerState:TVOBJ.powerState})
 				})
 			} else {
-				cb.send({powerState:this.powerState})
+				cb.send({powerState:TVOBJ.powerState})
 			}
 		})
 		.finally(function(){
@@ -212,14 +212,15 @@ class VizioTV extends TV {
 	}
 	
 	PowerOff(cb, retries=5){
+		TVOBJ = this
 		this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
 				axios.put('https://'+this.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":this.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
-						this.powerState=0
-						cb.send({powerState:this.powerState})
+						TVOBJ.powerState=0
+						cb.send({powerState:TVOBJ.powerState})
 					} else {
 						if(retries > 0){
 							PowerOff(cb, retries-1)
@@ -229,10 +230,10 @@ class VizioTV extends TV {
 					}
 				}).catch(function (err){
 					console.log(err)
-					cb.send({powerState:this.powerState})
+					cb.send({powerState:TVOBJ.powerState})
 				})
 			} else {
-				cb.send({powerState:this.powerState})
+				cb.send({powerState:TVOBJ.powerState})
 			}
 		})
 	}
