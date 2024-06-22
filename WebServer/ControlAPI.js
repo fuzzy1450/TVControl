@@ -165,7 +165,7 @@ class VizioTV extends TV {
 	
 	PowerOn(cb, retries=5){
 		
-		TVOBJ = this
+		let TVOBJ = this
 		this.GetStatus()
 		.then(function(res){
 			if(!res.powerState){
@@ -212,7 +212,7 @@ class VizioTV extends TV {
 	}
 	
 	PowerOff(cb, retries=5){
-		TVOBJ = this
+		let TVOBJ = this
 		this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
