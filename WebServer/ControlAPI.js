@@ -281,6 +281,8 @@ class AndroidTV extends TV {
 					console.log(output.toString())
 				})
 			})
+		}).catch(function(err){
+			console.log(err)
 		})
 	}
 	
