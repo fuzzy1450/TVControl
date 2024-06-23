@@ -31,22 +31,30 @@ function apiRequest(Class, Name, RequestType){
 			let Status = data[i]
 			let tvName = Status.name 
 			let powerState = Status.powerState
+			let err = Status.ERR
+			
 			let tvElem=document.getElementById(tvName)
 				
-				if(tvElem){
-					if(powerState==1){
-						tvElem.classList.remove("off")
-						tvElem.classList.add("on")
-						tvElem.onclick=onclickGenerator(tvName, "PowerOff")
-					} else {
-						tvElem.classList.remove("on")
-						tvElem.classList.add("off")
-						
-						tvElem.onclick=onclickGenerator(tvName, "PowerOn")
-					}
+			if(tvElem){
+				if(err){
+					tvElem.classList.remove("off")
+					tvElem.classList.remove("on")
+					tvElem.onclick=function(){}
+					tvElem.classList.add("DeviceErr")
+					
+				} else if (powerState==1){
+					tvElem.classList.remove("off")
+					tvElem.classList.add("on")
+					tvElem.onclick=onclickGenerator(tvName, "PowerOff")
 				} else {
-					console.warn("could not update display for TV " + tvName)
+					tvElem.classList.remove("on")
+					tvElem.classList.add("off")
+					
+					tvElem.onclick=onclickGenerator(tvName, "PowerOn")
 				}
+			} else {
+				console.warn("could not update display for TV " + tvName)
+			}
 			
 		}
 		

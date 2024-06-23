@@ -51,6 +51,16 @@
 	background-color: green;
 }
 
+.DeviceErr {
+	background: repeating-linear-gradient(
+		45deg,
+		#FF0000,
+		#FF0000 10px,
+		#ABABAB 10px,
+		#ABABAB 20px
+	);
+}
+
 
 .Group {
 	border: 2px solid #524C42;
