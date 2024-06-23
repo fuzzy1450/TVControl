@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/api/All/:RequestType', (req, res) => {
-	rqID = requestCounter++
+	rqID = requestCounter++ 
 	console.time("Req#"+String(rqID))
 	
 	ObjClass = "All"
@@ -37,6 +37,8 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	ObjName = req.params.objName
 	ReqType = req.params.RequestType
 	console.log("["+req.ip+"] Requested " + ReqType + " for " + ObjClass + "//" + ObjName)
+	
+	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
 	
 	

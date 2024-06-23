@@ -1,4 +1,5 @@
 const { spawnSync } = require('child_process');
+const { exec } = require("child_process");
 
 
 const https = require('https')
@@ -9,38 +10,59 @@ const axios = ax.create({
   })
 });
 
-var adb = require('adbkit')
 
-
-const ScriptType = {
-	START: "Startup",
-	STOP: "Shutdown",
-	STATUS: "Status"
+const Control = {
+	All: {},
+	Bays: {},
+	Rooms: {},
+	TVs: {}
 }
 
-
-
-function RunScript(type, arg_path){
-	return spawnSync('cmd.exe', ['/c','C:\\RokuControl\\WebServer\\scripts\\'+type+'.bat', arg_path]);
-}
 
 class ControlArea {
-	constructor(FilePath){
-		this.FilePath=FilePath
+	constructor(TVNameList, AllTVs){
+		this.TVNameList=TVNameList
+		this.TVs = []
+		for(i in this.TVNameList){
+			this.TVs.push(AllTVs[this.TVNameList[i]])
+		}
 	}
 	
-	PowerOn(){
-		return RunScript(ScriptType.START, this.FilePath)
+	PowerOn(cb){
+		let result = {}
+		for(i in this.TVs){
+			let DeviceName = this.TVs[i].DeviceName
+			
+			this.TVs[i].PowerOn()
+			.then(function(res) {
+				if(cb){	cb.write({name:DeviceName, powerState:res}) }
+			})
+		}
 	}
 
-	PowerOff(){
-		return RunScript(ScriptType.STOP, this.FilePath)
+	PowerOff(cb){
+		let result = {}
+		for(i in this.TVs){
+			let DeviceName = this.TVs[i].DeviceName
+			result[i]={name:DeviceName, powerState:this.TVs[i].PowerOff()}
+		}
+		if(cb){ cb.send(result) }
+		return result
 	}
 	
-	GetStatus(){
-		return RunScript(ScriptType.STATUS, this.FilePath)
+	GetStatus(cb){
+		let FNs = []
+		for(i in this.TVs){
+			let DeviceName = this.TVs[i].DeviceName
+			FNs.push(this.TVs[i].GetStatus())
+		}	
+		Promise.all(FNs)
+		.then(function(values) {
+			if(cb){ cb.send(values) }
+		})
 	}
 }
+
 
 class TV {
 	constructor(IP, DeviceName){
@@ -68,24 +90,25 @@ class RokuTV extends TV {
 	}
 	
 	PowerOn(cb, retries=5){
+		let TVOBJ = this
 		axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
-				if(this.StartupPluginID!=0){
-					this.LaunchApp(this.StartupPluginID)
+				if(TVOBJ.StartupPluginID!=0){
+					TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
 				} 
-				cb.send({powerState:1})
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:1})}
 			
 			} else {
 				if(retries > 0){
 					return PowerOn(cb, retries-1)
 				} else {
-					throw new Error("Failed to turn on TV "+this.DeviceName+" - max retries reached")
+					throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
 		}).catch(function(err){
 				console.log(err)
-				cb.send({powerState:0})
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0})}
 		})
 		
 		
@@ -125,25 +148,25 @@ class RokuTV extends TV {
 				console.log(err)
 				return;
 		}).finally(function(res){
-				cb.send({powerState:0})
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0})}
 		})
 	}
 
 	GetStatus(cb){
-		axios.get('http://'+this.IP+':8060/query/device-info')
+		let pwr = 0
+		let TVOBJ = this
+		return axios.get('http://'+this.IP+':8060/query/device-info')
 		.then(function (res){
 			if(res.status == 200){
 				if(res.data.includes("PowerOn")){
-					cb.send({powerState:1})
-				} else {
-					cb.send({powerState:0})
+					pwr = 1
 				}
-			} else {
-				cb.send({powerState:0})
 			}
 		}).catch(function(err){
 				console.log(err)
-				cb.send({powerState:0});
+		}).finally(function(){
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+			return {name:TVOBJ.DeviceName, powerState:pwr}
 		})
 	}
 	
@@ -161,14 +184,14 @@ class VizioTV extends TV {
 	PowerOn(cb, retries=5){
 		
 		let TVOBJ = this
-		this.GetStatus()
+		return this.GetStatus()
 		.then(function(res){
 			if(!res){
 				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=1
-						cb.send({powerState:TVOBJ.powerState})
+						cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 					} else {
 						if(retries > 0){
 							PowerOn(cb, retries-1)
@@ -178,10 +201,10 @@ class VizioTV extends TV {
 					}
 				}).catch(function (err){
 					console.log(err)
-					cb.send({powerState:TVOBJ.powerState})
+					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 				})
 			} else {
-				cb.send({powerState:TVOBJ.powerState})
+				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 			}
 		})
 		.finally(function(){
@@ -216,7 +239,7 @@ class VizioTV extends TV {
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
-						cb.send({powerState:TVOBJ.powerState})
+						cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 					} else {
 						if(retries > 0){
 							PowerOff(cb, retries-1)
@@ -226,10 +249,10 @@ class VizioTV extends TV {
 					}
 				}).catch(function (err){
 					console.log(err)
-					cb.send({powerState:TVOBJ.powerState})
+					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 				})
 			} else {
-				cb.send({powerState:TVOBJ.powerState})
+				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 			}
 		})
 	}
@@ -255,9 +278,9 @@ class VizioTV extends TV {
 			console.log(err)
 		}).finally(function(res){
 			if(cb){
-				cb.send({powerState:TVOBJ.powerState})
+				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 			}
-			return TVOBJ.powerState
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
 		})
 	}
 }
@@ -266,97 +289,98 @@ class AndroidTV extends TV {
 	constructor(IP, DeviceName, MAC){
 		super(IP, DeviceName)
 		this.MAC=MAC
-		this.controlClient = adb.createClient({host: IP, port:"5555"})
+		this.connected=false
+		this.DeviceConnect()
 	}
 	
-	
-	GetStatus(cb){
-		let client = this.controlClient
-		client.listDevices()
-		.then(function(devices){
-			return Promise.map(devices, function(device){
-				return client.shell(device.id, "dumpsys power")
-				.then(adb.until.readAll)
-				.then(function(output){
-					console.log(output.toString())
-				})
-			})
-		}).catch(function(err){
-			console.log(err)
-		})
+	DeviceConnect(retries=5){
+		exec(`adb.exe connect ${this.IP}:5555`, (error, stdout, stderr) => {
+			if(error) {
+				if(retries>0){
+					this.DeviceConnect(retries-1)
+				}
+			} else {
+				this.connected=true
+			}
+		});
 	}
 	
+	GetStatus(cb, retries=5){	
+		let TVOBJ = this
+		return Promise.resolve(exec(`adb.exe -s ${this.IP}:5555 shell dumpsys power`, (error, stdout, stderr) => {
+			let pwr = 0
+			
+			if(error) {
+				if(retries>0){
+					this.GetStatus(cb, retries-1)
+				} else {
+					console.log(error)
+					console.log("-------")
+					console.log(stderr)
+				}
+			} else {
+				if(stdout.includes("Display Power: state=OFF")){
+					pwr = 0
+				} else {
+					pwr = 1
+				}
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+				return {name:TVOBJ.DeviceName, powerState:pwr}
+				
+			}
+		}))
+	}
 	
+	PowerOn(cb, retries=5){
+		let pwr = this.GetStatus()
+		if(!pwr){
+			exec(`adb.exe -s ${this.IP}:5555 shell input keyevent 224`, (error, stdout, stderr) => {
+				if(error) {
+					if(retries>0){
+						this.PowerOn(cb, retries-1)
+					} else {
+						console.log(error)
+						console.log("-------")
+						console.log(stderr)
+					}
+				} else {
+					cb.send({name:TVOBJ.DeviceName, powerState:1})
+					return 1
+				}
+			});
+		}
+	}
+	
+	PowerOff(cb, retries=5){
+		let pwr = this.GetStatus()
+		if(!pwr){
+			exec(`adb.exe -s ${this.IP}:5555 shell input keyevent 26`, (error, stdout, stderr) => {
+				if(error) {
+					if(retries>0){
+						this.PowerOff(cb, retries-1)
+					} else {
+						console.log(error)
+						console.log("-------")
+						console.log(stderr)
+					}
+				} else {
+					cb.send({name:TVOBJ.DeviceName, powerState:0})
+					return 0
+				}
+			});
+		}
+	}
 	
 }
 
-const FilePaths = {
-	All: "/mnt/c/RokuControl/TvLists/All.txt",
-	Bays: {
-		Garden: "/mnt/c/RokuControl/TvLists/Bays/Garden.txt",
-		Hudson: "/mnt/c/RokuControl/TvLists/Bays/Hudson.txt",
-		Jackson: "/mnt/c/RokuControl/TvLists/Bays/Jackson.txt",
-		Madison: "/mnt/c/RokuControl/TvLists/Bays/Madison.txt",
-		Monroe: "/mnt/c/RokuControl/TvLists/Bays/Monroe.txt",
-	},
-	Rooms: {
-		Bowling: "/mnt/c/RokuControl/TvLists/Rooms/Bowling.txt",
-		PingPong: "/mnt/c/RokuControl/TvLists/Rooms/PingPong.txt",
-		FrontDesk: "/mnt/c/RokuControl/TvLists/Rooms/FrontDesk.txt",
-		PartyRoom: "/mnt/c/RokuControl/TvLists/Rooms/PartyRoom.txt",
-		PoolHall: "/mnt/c/RokuControl/TvLists/Rooms/PoolHall.txt",
-		BoardGame: "/mnt/c/RokuControl/TvLists/Rooms/BoardGame.txt"
-	},
-	TVs: {
-		TODO: "get data for every TV. See below for format",
-		FrontDesk4: ["/mnt/c/RokuControl/TvLists/TVs/FrontDesk4.txt", "FrontDesk4"],
-		FrontDesk3: ["/mnt/c/RokuControl/TvLists/TVs/FrontDesk3.txt", "FrontDesk3"],
-		FrontDesk2: ["/mnt/c/RokuControl/TvLists/TVs/FrontDesk2.txt", "FrontDesk2"],
-		FrontDesk1: ["/mnt/c/RokuControl/TvLists/TVs/FrontDesk1.txt", "FrontDesk1"],
-		PingPongNorth: ["/mnt/c/RokuControl/TvLists/TVs/PingPongNorth.txt", "PingPongNorth"],
-		PingPongMiddle: ["/mnt/c/RokuControl/TvLists/TVs/PingPongMiddle.txt", "PingPongMiddle"],
-		PingPongSouth: ["/mnt/c/RokuControl/TvLists/TVs/PingPongSouth.txt", "PingPongSouth"],
-		BowlingMiddle4: ["/mnt/c/RokuControl/TvLists/TVs/BowlingMiddle4.txt", "BowlingMiddle4"],
-		BowlingLeft: ["/mnt/c/RokuControl/TvLists/TVs/BowlingLeft.txt", "BowlingLeft"],
-		BowlingRight: ["/mnt/c/RokuControl/TvLists/TVs/BowlingRight.txt", "BowlingRight"],
-		PartyRoomTV: ["/mnt/c/RokuControl/TvLists/TVs/PartyRoomTV.txt", "PartyRoomTV"],
-		PoolHallEast: ["/mnt/c/RokuControl/TvLists/TVs/PoolHallEast.txt", "PoolHallEast"],
-		PoolHallWest: ["/mnt/c/RokuControl/TvLists/TVs/PoolHallWest.txt", "PoolHallWest"],
-		PoolHallSignage: ["/mnt/c/RokuControl/TvLists/TVs/PoolHallSignage.txt", "PoolHallSignage"],
-		BoardGameEast: ["/mnt/c/RokuControl/TvLists/TVs/BoardGameEast.txt", "BoardGameEast"],
-		BoardGameWest: ["/mnt/c/RokuControl/TvLists/TVs/BoardGameWest.txt", "BoardGameWest"],
-		HudsonLeft: ["/mnt/c/RokuControl/TvLists/TVs/HudsonLeft.txt", "HudsonLeft"],
-		HudsonRight: ["/mnt/c/RokuControl/TvLists/TVs/HudsonRight.txt", "HudsonRight"],
-		GardenLeft: ["/mnt/c/RokuControl/TvLists/TVs/GardenLeft.txt", "GardenLeft"],
-		GardenRight: ["/mnt/c/RokuControl/TvLists/TVs/GardenRight.txt", "GardenRight"],
-		MadisonLeft: ["/mnt/c/RokuControl/TvLists/TVs/MadisonLeft.txt", "MadisonLeft"],
-		MadisonRight: ["/mnt/c/RokuControl/TvLists/TVs/MadisonRight.txt", "MadisonRight"],
-		MonroeLeft: ["/mnt/c/RokuControl/TvLists/TVs/MonroeLeft.txt", "MonroeLeft"],
-		MonroeRight: ["/mnt/c/RokuControl/TvLists/TVs/MonroeRight.txt", "MonroeRight"],
-		JacksonLeft: ["/mnt/c/RokuControl/TvLists/TVs/JacksonLeft.txt", "JacksonLeft"],
-		JacksonRight: ["/mnt/c/RokuControl/TvLists/TVs/JacksonRight.txt", "JacksonRight"]
-	}
-}
 
-const Control = {
-	All: new ControlArea(FilePaths.All),
-	Bays: {
-		Hudson: new ControlArea(FilePaths.Bays.Hudson),
-		Garden: new ControlArea(FilePaths.Bays.Garden),
-		Madison: new ControlArea(FilePaths.Bays.Madison),
-		Monroe: new ControlArea(FilePaths.Bays.Monroe),
-		Jackson: new ControlArea(FilePaths.Bays.Jackson)
-	},
-	Rooms: {
-		Bowling: new ControlArea(FilePaths.Rooms.Bowling),
-		PingPong: new ControlArea(FilePaths.Rooms.PingPong),
-		FrontDesk: new ControlArea(FilePaths.Rooms.FrontDesk),
-		PartyRoom: new ControlArea(FilePaths.Rooms.PartyRoom),
-		PoolHall: new ControlArea(FilePaths.Rooms.PoolHall),
-		BoardGame: new ControlArea(FilePaths.Rooms.BoardGame)
-	},
-	
-	TVs: {
+
+
+
+
+
+/*
+TVs: {
 		TODO: "implement individual TV control",
 		FrontDesk4: new TV(...FilePaths.TVs.FrontDesk4),
 		FrontDesk3: new TV(...FilePaths.TVs.FrontDesk3),
@@ -388,9 +412,40 @@ const Control = {
 		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0),
 		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td", "HDMI-3", "3487409261"),
 		PP_Test: new AndroidTV("192.168.50.156", "PingPongNorth", "38:64:07:D1:97:74")
-		
-	}
-	
 }
+*/
+
+function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
+	if(Scheme == "RK"){
+		return new RokuTV(IP, Name, Arg1)
+	} else if (Scheme == "AND") {
+		return new AndroidTV(IP, Name, Arg1)
+	} else if (Scheme == "VZ") {
+		return new VizioTV(IP, Name, Arg1, Arg2, Arg3)
+	} else {
+		throw new Error("Scheme " + Scheme + " unrecognized")
+	}
+}
+
+
+Devices = require("./etc/TVs.json")
+Areas = require("./etc/Areas.json")
+
+let TVs = {}
+for(i in Devices.TVs){ 
+	TVs[i] = TVLoader(...Devices.TVs[i])
+} 
+
+
+Control.TVs = TVs
+Control.All = new ControlArea(Areas.All, TVs)
+
+for( i in Areas.Bays){ 
+	Control.Bays[i] = new ControlArea(Areas.Bays[i], TVs)
+} 
+
+for( i in Areas.Rooms){ 
+	Control.Rooms[i] = new ControlArea(Areas.Rooms[i], TVs)
+} 
 
 exports.Control = Control
