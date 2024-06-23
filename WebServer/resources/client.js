@@ -14,41 +14,27 @@ function apiRequest(Class, Name, RequestType){
 	return fetch(url, {method: 'POST'})
 	.then(function(response) {
 		if(response.ok) {
-			return response
-		} else {
-			throw new Error('Request failed.')
-		}
-	})
-	.then(function(response) {
-		if(RequestType == "GetStatus"){
 			return response.json()
 		} else {
-			return StatusRefresh(Class, Name);
+			throw new Error('Request failed.')
 		}
 	})
 	.then(function(data){
 		if(data == null){
 			return;
 		}
-		
-		if(data.stderr.data.length!=0){
-			console.warn(data.stderr.data.map(intToChar).join(""))
+		if(Class == "TVs"){
+			data = [data]
 		}
 		
-		rawStdOut = data.stdout.data.map(intToChar).join("")
-		keyData=rawStdOut.split(Sequence_Marker)[1].split("\n")
-		
-		len=keyData.length
-		
-		for(i=0;i<len;i++){
-			steralizedData=keyData[i].replaceAll(" ", "")
-			if(steralizedData!=''){
-				lineData=steralizedData.split(':')
-				tvName = lineData[0]
-				tvElem=document.getElementById(tvName)
+		for(i in data){
+			let Status = data[i]
+			let tvName = Status.name 
+			let powerState = Status.powerState
+			let tvElem=document.getElementById(tvName)
 				
 				if(tvElem){
-					if(lineData[1]=="On"){
+					if(powerState==1){
 						tvElem.classList.remove("off")
 						tvElem.classList.add("on")
 						tvElem.onclick=onclickGenerator(tvName, "PowerOff")
@@ -59,9 +45,9 @@ function apiRequest(Class, Name, RequestType){
 						tvElem.onclick=onclickGenerator(tvName, "PowerOn")
 					}
 				} else {
-					console.warn("could not update display for TV " + lineData[0])
+					console.warn("could not update display for TV " + tvName)
 				}
-			}
+			
 		}
 		
 		return;
@@ -104,7 +90,7 @@ function StatusRefresh(Class,Name){
 function StatusRefreshTask(TVNameList, TVCount){
 	apiRequest("All", "", "GetStatus")
 	
-	setTimeout( StatusRefreshTask, 300000, TVNameList, TVCount );
+	setTimeout( StatusRefreshTask, 5000, TVNameList, TVCount );
 	
 }
 
