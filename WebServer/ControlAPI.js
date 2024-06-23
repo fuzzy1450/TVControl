@@ -1,12 +1,16 @@
 const { spawnSync } = require('child_process');
-const https = require('https')
 
+
+const https = require('https')
 const ax = require('axios');
 const axios = ax.create({
   httpsAgent: new https.Agent({  
     rejectUnauthorized: false
   })
 });
+
+var adb = require('adbkit')
+
 
 const ScriptType = {
 	START: "Startup",
@@ -259,6 +263,28 @@ class VizioTV extends TV {
 }
 
 class AndroidTV extends TV {
+	constructor(IP, DeviceName, MAC){
+		super(IP, DeviceName)
+		this.MAC=MAC
+		this.controlClient = adb.createClient({host: IP, port:"5555"})
+	}
+	
+	
+	GetStatus(cb){
+		let client = this.controlClient
+		client.listDevices()
+		.then(function(devices){
+			return Promise.map(devices, function(device){
+				return client.shell(device.id, "dumpsys power")
+				.then(adb.until.readAll)
+				.then(function(output){
+					console.log(output.toString())
+				})
+			})
+		})
+	}
+	
+	
 	
 }
 
@@ -358,7 +384,8 @@ const Control = {
 		JacksonRight: new TV(...FilePaths.TVs.JacksonRight),
 		
 		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0),
-		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td", "HDMI-3", "3487409261")
+		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td", "HDMI-3", "3487409261"),
+		PP_Test: new AndroidTV("192.168.50.156", "PingPongNorth", "38:64:07:D1:97:74")
 		
 	}
 	
