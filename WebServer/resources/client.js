@@ -30,6 +30,28 @@ function apiRequest(Class, Name, RequestType){
 		if(data == null){
 			return;
 		}
+		for(i in data){
+			let Status = data[i]
+			tvName = Status.name 
+			powerState = Status.powerState
+			tvElem=document.getElementById(tvName)
+				
+				if(tvElem){
+					if(powerState==1){
+						tvElem.classList.remove("off")
+						tvElem.classList.add("on")
+						tvElem.onclick=onclickGenerator(tvName, "PowerOff")
+					} else {
+						tvElem.classList.remove("on")
+						tvElem.classList.add("off")
+						
+						tvElem.onclick=onclickGenerator(tvName, "PowerOn")
+					}
+				} else {
+					console.warn("could not update display for TV " + tvName)
+				}
+			
+		}
 		
 		if(data.stderr.data.length!=0){
 			console.warn(data.stderr.data.map(intToChar).join(""))
