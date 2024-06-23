@@ -110,8 +110,10 @@ class RokuTV extends TV {
 					TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
 				} 
 				pwr = 1
-			
+			} else if(res.status == 202){
+				return TVOBJ.PowerOn(cb, retries)
 			} else {
+				console.log(res.status)
 				if(retries > 0){
 					return TVOBJ.PowerOn(cb, retries-1)
 				} else {
