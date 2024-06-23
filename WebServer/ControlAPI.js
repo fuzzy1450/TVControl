@@ -30,25 +30,33 @@ class ControlArea {
 	}
 	
 	PowerOn(cb){
-		let result = {}
+		let FNs = []
 		for(i in this.TVs){
 			let DeviceName = this.TVs[i].DeviceName
 			
-			this.TVs[i].PowerOn()
-			.then(function(res) {
-				if(cb){	cb.write({name:DeviceName, powerState:res}) }
-			})
+			FNs[i]=this.TVs[i].PowerOn()
 		}
+		Promise.all(FNs)
+		.then(function(values) {
+			if(cb){ cb.send(values) }
+		}).catch(function(errs){
+			console.log(errs)
+		})
 	}
 
 	PowerOff(cb){
-		let result = {}
+		let FNs = []
 		for(i in this.TVs){
 			let DeviceName = this.TVs[i].DeviceName
-			result[i]={name:DeviceName, powerState:this.TVs[i].PowerOff()}
+			
+			FNs[i]=this.TVs[i].PowerOff()
 		}
-		if(cb){ cb.send(result) }
-		return result
+		Promise.all(FNs)
+		.then(function(values) {
+			if(cb){ cb.send(values) }
+		}).catch(function(errs){
+			console.log(errs)
+		})
 	}
 	
 	GetStatus(cb){
@@ -94,24 +102,28 @@ class RokuTV extends TV {
 	
 	PowerOn(cb, retries=5){
 		let TVOBJ = this
-		axios.post('http://'+this.IP+':8060/keypress/PowerOn')
+		let pwr = 0
+		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
 				if(TVOBJ.StartupPluginID!=0){
 					TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
 				} 
-				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:1})}
+				pwr = 1
 			
 			} else {
 				if(retries > 0){
-					return PowerOn(cb, retries-1)
+					return TVOBJ.PowerOn(cb, retries-1)
 				} else {
+					pwr = 0
 					throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
+			return {name:TVOBJ.DeviceName, powerState:pwr}
 		}).catch(function(err){
 				console.log(err)
-				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0})}
+		}).finally(function(){
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
 		})
 		
 		
@@ -119,15 +131,16 @@ class RokuTV extends TV {
 	}
 	
 	LaunchApp(appID, retries=5){
-		axios.post('http://'+this.IP+':8060/launch/'+StartupPluginID)
+		let TVOBJ = this
+		axios.post('http://'+this.IP+':8060/launch/'+appID)
 		.then(function (res){
-			if(res.status == 200){
+			if(res.status == 200 || res.status == 204){
 				return 1
 			} else {
 				if (retries>0){
-					return LaunchApp(cb, appID, retries-1)
+					return TVOBJ.LaunchApp(appID, retries-1)
 				} else {
-					throw new Error("Failed to launch app on device "+this.DeviceName+" - max retries reached")
+					throw new Error("Failed to launch app on device "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
 		}).catch(function(err){
@@ -136,20 +149,21 @@ class RokuTV extends TV {
 	}
 	
 	PowerOff(cb, retries=5){
-		axios.post('http://'+this.IP+':8060/keypress/PowerOff')
+		let pwr = 0
+		let TVOBJ = this
+		return axios.post('http://'+this.IP+':8060/keypress/PowerOff')
 		.then(function (res){
 			if(res.status == 200){
-				return;
+				return {name:TVOBJ.DeviceName, powerState:0}
 			} else {
 				if (retries>0){
-					return PowerOff(cb, retries-1)
+					return TVOBJ.PowerOff(cb, retries-1)
 				} else {
-					throw new Error("Failed to turn off TV "+this.DeviceName+" - max retries reached")
+					throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
 		}).catch(function(err){
 				console.log(err)
-				return;
 		}).finally(function(res){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0})}
 		})
@@ -190,29 +204,28 @@ class VizioTV extends TV {
 		let TVOBJ = this
 		return this.GetStatus()
 		.then(function(res){
-			if(!res){
-				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
+			if(!res.powerState){
+				return axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=1
-						cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
+						TVOBJ.LaunchApp()
 					} else {
 						if(retries > 0){
-							PowerOn(cb, retries-1)
+							return TVOBJ.PowerOn(cb, retries-1)
 						} else {
 							throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
 				}).catch(function (err){
 					console.log(err)
-					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true}
 				})
-			} else {
-				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 			}
 		})
 		.finally(function(){
-				TVOBJ.LaunchApp()
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
 		})
 	}
 	
@@ -224,7 +237,7 @@ class VizioTV extends TV {
 				return 1
 			} else {
 				if(retries > 0){
-					LaunchApp(retries-1)
+					TVOBJ.LaunchApp(retries-1)
 				} else {
 					throw new Error("Failed to change input for TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
@@ -236,28 +249,28 @@ class VizioTV extends TV {
 	
 	PowerOff(cb, retries=5){
 		let TVOBJ = this
-		this.GetStatus()
+		return this.GetStatus()
 		.then(function(res){
-			if(res){
-				axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
+			if(res.powerState){
+				return axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
-						cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 					} else {
 						if(retries > 0){
-							PowerOff(cb, retries-1)
+							return TVOBJ.PowerOff(cb, retries-1)
 						} else {
 							throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
 				}).catch(function (err){
 					console.log(err)
-					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 				})
-			} else {
-				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
 			}
+		})
+		.finally(function(){
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
 		})
 	}
 
@@ -278,6 +291,7 @@ class VizioTV extends TV {
 			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
 		}).catch(function(err){
 			console.log(err)
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true}
 		}).finally(function(res){
 			if(cb){
 				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
@@ -295,22 +309,36 @@ class AndroidTV extends TV {
 	}
 	
 	DeviceConnect(retries=5){
-		exec(`adb.exe connect ${this.IP}:5555`, (error, stdout, stderr) => {
-			if(error) {
-				if(retries>0){
-					this.DeviceConnect(retries-1)
-				}
+		let TVOBJ = this
+		return exec(`adb.exe connect ${TVOBJ.IP}:5555`)
+		.then(function(res){
+			if(res.stdout.includes("failed")){
+				throw new Error(TVOBJ.DeviceName + "\t" + res.stdout)
+			}
+			TVOBJ.connected=true
+			return true
+		})
+		.catch(function(err){
+			if(retries>0){
+				return TVOBJ.DeviceConnect(retries-1)
 			} else {
-				this.connected=true
+				console.log("Failed to connect to TV " + TVOBJ.DeviceName)
+				console.log(err)
+				TVOBJ.connected=false
+				return false
 			}
 		});
 	}
 	
-	GetStatus(cb, retries=5){	
+	GetStatus(cb, retries=5, TVPass){
 		let TVOBJ = this
+		
+		if(TVPass){TVOBJ=TVPass}
+		
 		let pwr = 0
 		return exec(`adb.exe -s ${this.IP}:5555 shell dumpsys power`)
 		.then(function(res){
+			
 			if(res.stdout.includes("Display Power: state=OFF")){
 				pwr = 0
 			} else {
@@ -321,7 +349,9 @@ class AndroidTV extends TV {
 			if(retries>0){
 				return TVOBJ.GetStatus(cb, retries-1)
 			} else {
-				console.log(err)
+				pwr = 0
+				console.log("Error getting status for device " + TVOBJ.DeviceName)
+				return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
 			}
 		}).finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
@@ -330,46 +360,62 @@ class AndroidTV extends TV {
 	}
 	
 	PowerOn(cb, retries=5){
-		this.GetStatus()
-		.then(function(pwr){
-			if(!pwr.powerState){
-				exec(`adb.exe -s ${this.IP}:5555 shell input keyevent 224`, (error, stdout, stderr) => {
-					if(error) {
-						if(retries>0){
-							this.PowerOn(cb, retries-1)
+		let TVOBJ = this
+		let pwr = 0
+		return this.GetStatus()
+		.then(function(TVStatus){
+			if(!TVStatus.powerState){
+				return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell input keyevent 224`)
+				.then(function(res){
+					pwr = 1
+					return {name:TVOBJ.DeviceName, powerState:pwr}
+				})
+				.catch(function(err){
+					if(retries>0){
+							return TVOBJ.PowerOn(cb, retries-1)
 						} else {
-							console.log(error)
-							console.log("-------")
-							console.log(stderr)
-							return 0
+							console.log(err)
+							pwr = 0
+							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
 						}
-					} else {
-						cb.send({name:TVOBJ.DeviceName, powerState:1})
-						return 1
-					}
-				});
+				})
+			} else {
+				return {name:TVOBJ.DeviceName, powerState:1}
 			}
+		})
+		.finally(function(){
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
 		})
 	}
 	
 	PowerOff(cb, retries=5){
-		let pwr = this.GetStatus()
-		if(!pwr){
-			exec(`adb.exe -s ${this.IP}:5555 shell input keyevent 26`, (error, stdout, stderr) => {
-				if(error) {
+		let pwr = 1;
+		let TVOBJ = this
+		return this.GetStatus()
+		.then(function(TVStatus){
+			if(TVStatus.powerState){
+				return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell input keyevent 223`)
+				.then(function(res){
+					pwr = 0
+					return {name:TVOBJ.DeviceName, powerState:pwr}
+				})
+				.catch(function(err){
 					if(retries>0){
-						this.PowerOff(cb, retries-1)
-					} else {
-						console.log(error)
-						console.log("-------")
-						console.log(stderr)
-					}
-				} else {
-					cb.send({name:TVOBJ.DeviceName, powerState:0})
-					return 0
-				}
-			});
-		}
+							return TVOBJ.PowerOff(cb, retries-1)
+						} else {
+							console.log(err)
+							pwr = 0
+							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
+						}
+				})
+			} else {
+				return {name:TVOBJ.DeviceName, powerState:0}
+			};
+		})
+		.finally(function(){
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+		})
+		
 	}
 	
 }
