@@ -100,7 +100,7 @@ class RokuTV extends TV {
 		this.StartupPluginID=StartupPluginID
 	}
 	
-	PowerOn(cb, retries=5){
+	PowerOn(cb, retries=10){
 		let TVOBJ = this
 		let pwr = 0
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
@@ -132,7 +132,7 @@ class RokuTV extends TV {
 		
 	}
 	
-	LaunchApp(appID, retries=5){
+	LaunchApp(appID, retries=10){
 		let TVOBJ = this
 		axios.post('http://'+this.IP+':8060/launch/'+appID)
 		.then(function (res){
@@ -150,7 +150,7 @@ class RokuTV extends TV {
 		})
 	}
 	
-	PowerOff(cb, retries=5){
+	PowerOff(cb, retries=10){
 		let pwr = 0
 		let TVOBJ = this
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOff')
@@ -201,7 +201,7 @@ class VizioTV extends TV {
 	}
 	
 	
-	PowerOn(cb, retries=5){
+	PowerOn(cb, retries=10){
 		
 		let TVOBJ = this
 		return this.GetStatus()
@@ -231,7 +231,7 @@ class VizioTV extends TV {
 		})
 	}
 	
-	LaunchApp(retries=5){
+	LaunchApp(retries=10){
 		let TVOBJ = this
 		axios.put('https://'+this.IP+':7345/menu_native/dynamic/tv_settings/devices/current_input', this.ChangeInputRequestData,  {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
@@ -249,7 +249,7 @@ class VizioTV extends TV {
 		})
 	}
 	
-	PowerOff(cb, retries=5){
+	PowerOff(cb, retries=10){
 		let TVOBJ = this
 		return this.GetStatus()
 		.then(function(res){
@@ -310,7 +310,7 @@ class AndroidTV extends TV {
 		this.DeviceConnect()
 	}
 	
-	DeviceConnect(retries=5){
+	DeviceConnect(retries=10){
 		let TVOBJ = this
 		return exec(`adb.exe connect ${TVOBJ.IP}:5555`)
 		.then(function(res){
@@ -332,7 +332,7 @@ class AndroidTV extends TV {
 		});
 	}
 	
-	GetStatus(cb, retries=5, TVPass){
+	GetStatus(cb, retries=10, TVPass){
 		let TVOBJ = this
 		
 		if(TVPass){TVOBJ=TVPass}
@@ -361,7 +361,7 @@ class AndroidTV extends TV {
 		
 	}
 	
-	PowerOn(cb, retries=5){
+	PowerOn(cb, retries=10){
 		let TVOBJ = this
 		let pwr = 0
 		return this.GetStatus()
@@ -390,7 +390,7 @@ class AndroidTV extends TV {
 		})
 	}
 	
-	PowerOff(cb, retries=5){
+	PowerOff(cb, retries=10){
 		let pwr = 1;
 		let TVOBJ = this
 		return this.GetStatus()
