@@ -90,7 +90,7 @@ function StatusRefresh(Class,Name){
 function StatusRefreshTask(TVNameList, TVCount){
 	apiRequest("All", "", "GetStatus")
 	
-	setTimeout( StatusRefreshTask, 300000, TVNameList, TVCount );
+	setTimeout( StatusRefreshTask, 5000, TVNameList, TVCount );
 	
 }
 
