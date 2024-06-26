@@ -107,9 +107,11 @@ class RokuTV extends TV {
 		.then(function (res){
 			if(res.status == 200){
 				return {name:TVOBJ.DeviceName, powerState:0}
+			} else if (res.status == 202){
+				return {name:TVOBJ.DeviceName, powerState:0}
 			} else {
 				if (retries>0){
-					return TVOBJ.PowerOff(cb, retries-1)
+					return TVOBJ.PowerOff(null, retries-1)
 				} else {
 					throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
@@ -215,7 +217,7 @@ class VizioTV extends TV {
 						TVOBJ.powerState=0
 					} else {
 						if(retries > 0){
-							return TVOBJ.PowerOff(cb, retries-1)
+							return TVOBJ.PowerOff(null, retries-1)
 						} else {
 							throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
@@ -378,7 +380,7 @@ class AndroidTV extends TV {
 				})
 				.catch(function(err){
 					if(retries>0){
-							return TVOBJ.PowerOff(cb, retries-1)
+							return TVOBJ.PowerOff(null, retries-1)
 						} else {
 							console.log(err)
 							pwr = 0

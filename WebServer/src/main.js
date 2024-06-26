@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 
 
 app.get('/', (req, res) => {
-  res.sendFile('./views/index.html', { root: __dirname })
+  res.sendFile('./views/index.html', { root: __dirname+"/../" })
   console.log("["+req.ip+"] Requested Index")
 })
 
@@ -49,7 +49,7 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 app.get('/resources/:resource', (req, res) => {
 	ResourceName = req.params.resource
 	console.debug("["+req.ip+"] Requested Resource " + ResourceName)
-	res.sendFile(ResourceName, { root: __dirname+"/resources" })
+	res.sendFile(ResourceName, { root: __dirname+"/../resources" })
 })
 
 

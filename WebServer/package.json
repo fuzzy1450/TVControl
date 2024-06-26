@@ -12,6 +12,7 @@
     "axios": "^1.7.2",
     "etc": "file:./etc",
 	"src": "file:./src",
+	"views": "file:./views",
     "express": "^4.19.2"
   }
 }

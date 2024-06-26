@@ -1,1 +1,0 @@
-192.168.50.227 d4:f9:21:88:3b:ae AND PoolHallWest

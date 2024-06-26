@@ -1,0 +1,17 @@
+FrontDesk1
+FrontDesk2
+FrontDesk3
+FrontDesk4
+BowlingLeft
+BowlingRight
+BowlingMiddle4
+PoolHallSignage
+PoolHallEast
+PoolHallWest
+MonroeLeft
+MonroeRight
+PingPongNorth
+PingPongMiddle
+PingPongSouth
+BoardGameWest
+BoardGameEast

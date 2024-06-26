@@ -1,3 +1,0 @@
-192.168.50.102 Zff6mnb0td VZ BowlingMiddle4
-192.168.50.213 00:BF:AF:C5:17:F0 AND BowlingLeft
-192.168.50.171 0 RK BowlingRight
