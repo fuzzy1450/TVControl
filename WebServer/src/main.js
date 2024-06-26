@@ -23,10 +23,10 @@ app.post('/api/All/:RequestType', (req, res) => {
 	ReqType = req.params.RequestType
 	console.log("["+req.ip+"] Requested " + ReqType + " for " + ObjClass + "//" + ObjClass)
 	TvAPI.Control[ObjClass][ReqType](res)
-	
-	
-	console.debug("Answered Request for "+ ObjClass + "//" + ObjClass)	
-	console.timeEnd("Req#"+String(rqID))	
+	.finally(function(){
+		console.debug("["+req.ip+"] Answered Request for "+ ObjClass + "//" + ObjClass)	
+		console.timeEnd("Req#"+String(rqID))	
+	})
 })
 
 app.post('/api/:className/:objName/:RequestType', (req, res) => {
@@ -40,10 +40,10 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	
 	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
-	
-	
-	console.debug("Answered Request for "+ ObjClass + "//" + ObjName)
-	console.timeEnd("Req#"+String(rqID))	
+	.finally(function(){
+		console.debug("["+req.ip+"] Answered Request for "+ ObjClass + "//" + ObjClass)	
+		console.timeEnd("Req#"+String(rqID))	
+	})
 })
 
 app.get('/resources/:resource', (req, res) => {

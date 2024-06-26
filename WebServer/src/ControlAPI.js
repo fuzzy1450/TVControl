@@ -418,7 +418,7 @@ class ControlArea {
 			
 			FNs[i]=this.TVs[i].PowerOn()
 		}
-		Promise.all(FNs)
+		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
 		}).catch(function(errs){
@@ -433,7 +433,7 @@ class ControlArea {
 			
 			FNs[i]=this.TVs[i].PowerOff()
 		}
-		Promise.all(FNs)
+		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
 		}).catch(function(errs){
@@ -447,7 +447,7 @@ class ControlArea {
 			let DeviceName = this.TVs[i].DeviceName
 			FNs[i]=this.TVs[i].GetStatus()
 		}	
-		Promise.all(FNs)
+		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
 		}).catch(function(errs){
