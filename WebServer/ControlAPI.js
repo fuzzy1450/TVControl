@@ -29,15 +29,15 @@ class TV {
 	}
 	
 	PowerOn(){
-		console.log("PowerOn not implemented for " + this.DeviceName)
+		throw new Error("PowerOn not implemented for " + this.DeviceName)
 	}
 
 	PowerOff(){
-		console.log("PowerOff not implemented for " + this.DeviceName)
+		throw new Error("PowerOff not implemented for " + this.DeviceName)
 	}
 	
 	GetStatus(){
-		console.log("GetStatus not implemented for " + this.DeviceName)
+		throw new Error("GetStatus not implemented for " + this.DeviceName)
 	}
 }
 
