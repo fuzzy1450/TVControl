@@ -19,7 +19,7 @@
 
 ### Project Layout
 	`./README.txt`		- You're doing that
-	`./etc/`				- External Files/Tools.
+	`./etc/`			- External Files/Tools.
 		`platform-tools/`		- Android Debug Toolkit (windows)
 	`./Schedule/*`		- a file tree that dictates the schedule for opening/closing
 	`./RunSchedule.bat`	- used by Task Scheduler to automate api calls to the server.
