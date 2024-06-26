@@ -82,3 +82,6 @@ The only files which should ever need maintainence will be
 				It is not needed with all the AND TVs - for these, <arg> should be 0
 
 
+
+### TODO
+Calculate execution time for each TV request, pass those stats to the client.
