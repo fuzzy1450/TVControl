@@ -469,8 +469,8 @@ function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
 }
 
 
-Devices = require("./etc/TVs.json")	// An Object containing info on all TVs
-Areas = require("./etc/Areas.json") // An Object which contains info for each Control Area.
+Devices = require("etc/TVs.json")	// An Object containing info on all TVs
+Areas = require("etc/Areas.json") // An Object which contains info for each Control Area.
 
 // create each TV Object
 let TVs = {}

@@ -9,7 +9,7 @@ Requirements:
 
 Installation:
 	cd to the project directory
-	run `npm install`
+	run `npm i`
 
 
 Author:
@@ -28,8 +28,9 @@ Project Layout:
 	./logs/			- What else?
 	./resources/		- Files served to the clients. Everything in this folder is public!
 	./views/		- HTML files served to clients. Not public - only static pathing is used for retrieving views
-	./ControlAPI.js		- The module which controls TVs
-	./main.js		- The Webserver
+	./src/			- Source Folder. Modules inside can be imported with `require("src/Module")`
+		./ControlAPI.js		- The module which controls TVs
+		./main.js		- The Webserver
 	./RunServer.bat		- Batch script to launch the server
 	./README		- You're doing that
 	

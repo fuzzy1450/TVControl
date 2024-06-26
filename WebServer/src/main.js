@@ -1,4 +1,4 @@
-TvAPI = require("./ControlAPI.js")
+TvAPI = require("src/ControlAPI")
 
 
 const express = require('express')
