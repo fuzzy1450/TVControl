@@ -353,7 +353,22 @@ class AndroidTV extends TV {
 			} else {
 				pwr = 0
 				console.log("Error getting status for device " + TVOBJ.DeviceName)
-				return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
+				console.log("Attempting Reconnect...")
+				return TVOBJ.DeviceConnect()
+				.then(function(res){
+					if(res){
+						console.log("Reconnected to " + TVOBJ.DeviceName)
+						return TVOBJ.GetStatus(cb, 5)
+					} else {
+						console.log("Reconnect Failed for " + TVOBJ.DeviceName)	
+						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
+					}
+					
+				}).catch(function(err){
+					console.log("Reconnect Failed for " + TVOBJ.DeviceName)
+					return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
+				})
+				
 			}
 		}).finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
