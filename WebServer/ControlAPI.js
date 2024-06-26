@@ -20,60 +20,6 @@ const Control = {
 }
 
 
-class ControlArea {
-	constructor(TVNameList, AllTVs){
-		this.TVNameList=TVNameList
-		this.TVs = []
-		for(i in this.TVNameList){
-			this.TVs.push(AllTVs[this.TVNameList[i]])
-		}
-	}
-	
-	PowerOn(cb){
-		let FNs = []
-		for(i in this.TVs){
-			let DeviceName = this.TVs[i].DeviceName
-			
-			FNs[i]=this.TVs[i].PowerOn()
-		}
-		Promise.all(FNs)
-		.then(function(values) {
-			if(cb){ cb.send(values) }
-		}).catch(function(errs){
-			console.log(errs)
-		})
-	}
-
-	PowerOff(cb){
-		let FNs = []
-		for(i in this.TVs){
-			let DeviceName = this.TVs[i].DeviceName
-			
-			FNs[i]=this.TVs[i].PowerOff()
-		}
-		Promise.all(FNs)
-		.then(function(values) {
-			if(cb){ cb.send(values) }
-		}).catch(function(errs){
-			console.log(errs)
-		})
-	}
-	
-	GetStatus(cb){
-		let FNs = []
-		for(i in this.TVs){
-			let DeviceName = this.TVs[i].DeviceName
-			FNs[i]=this.TVs[i].GetStatus()
-		}	
-		Promise.all(FNs)
-		.then(function(values) {
-			if(cb){ cb.send(values) }
-		}).catch(function(errs){
-			console.log(errs)
-		})
-	}
-}
-
 
 class TV {
 	constructor(IP, DeviceName){
@@ -438,46 +384,60 @@ class AndroidTV extends TV {
 }
 
 
+class ControlArea {
+	constructor(TVNameList, AllTVs){
+		this.TVNameList=TVNameList
+		this.TVs = []
+		for(i in this.TVNameList){
+			this.TVs.push(AllTVs[this.TVNameList[i]])
+		}
+	}
+	
+	PowerOn(cb){
+		let FNs = []
+		for(i in this.TVs){
+			let DeviceName = this.TVs[i].DeviceName
+			
+			FNs[i]=this.TVs[i].PowerOn()
+		}
+		Promise.all(FNs)
+		.then(function(values) {
+			if(cb){ cb.send(values) }
+		}).catch(function(errs){
+			console.log(errs)
+		})
+	}
 
-
-
-
-
-/*
-TVs: {
-		TODO: "implement individual TV control",
-		FrontDesk4: new TV(...FilePaths.TVs.FrontDesk4),
-		FrontDesk3: new TV(...FilePaths.TVs.FrontDesk3),
-		FrontDesk2: new TV(...FilePaths.TVs.FrontDesk2),
-		FrontDesk1: new TV(...FilePaths.TVs.FrontDesk1),
-		PingPongNorth: new TV(...FilePaths.TVs.PingPongNorth),
-		PingPongMiddle: new TV(...FilePaths.TVs.PingPongMiddle),
-		PingPongSouth: new TV(...FilePaths.TVs.PingPongSouth),
-		BowlingMiddle4: new TV(...FilePaths.TVs.BowlingMiddle4),
-		BowlingLeft: new TV(...FilePaths.TVs.BowlingLeft),
-		BowlingRight: new TV(...FilePaths.TVs.BowlingRight),
-		PartyRoomTV: new TV(...FilePaths.TVs.PartyRoomTV),
-		PoolHallEast: new TV(...FilePaths.TVs.PoolHallEast),
-		PoolHallWest: new TV(...FilePaths.TVs.PoolHallWest),
-		PoolHallSignage: new TV(...FilePaths.TVs.PoolHallSignage),
-		BoardGameEast: new TV(...FilePaths.TVs.BoardGameEast),
-		BoardGameWest: new TV(...FilePaths.TVs.BoardGameWest),
-		HudsonLeft: new TV(...FilePaths.TVs.HudsonLeft),
-		HudsonRight: new TV(...FilePaths.TVs.HudsonRight),
-		GardenLeft: new TV(...FilePaths.TVs.GardenLeft),
-		GardenRight: new TV(...FilePaths.TVs.GardenRight),
-		MadisonLeft: new TV(...FilePaths.TVs.MadisonLeft),
-		MadisonRight: new TV(...FilePaths.TVs.MadisonRight),
-		MonroeLeft: new TV(...FilePaths.TVs.MonroeLeft),
-		MonroeRight: new TV(...FilePaths.TVs.MonroeRight),
-		JacksonLeft: new TV(...FilePaths.TVs.JacksonLeft),
-		JacksonRight: new TV(...FilePaths.TVs.JacksonRight),
-		
-		FD_Test: new RokuTV("192.168.50.241", "FD_Test", 0),
-		BW_Test: new VizioTV("192.168.50.102","BowlingMiddle4","Zff6mnb0td", "HDMI-3", "3487409261"),
-		PP_Test: new AndroidTV("192.168.50.156", "PingPongNorth", "38:64:07:D1:97:74")
+	PowerOff(cb){
+		let FNs = []
+		for(i in this.TVs){
+			let DeviceName = this.TVs[i].DeviceName
+			
+			FNs[i]=this.TVs[i].PowerOff()
+		}
+		Promise.all(FNs)
+		.then(function(values) {
+			if(cb){ cb.send(values) }
+		}).catch(function(errs){
+			console.log(errs)
+		})
+	}
+	
+	GetStatus(cb){
+		let FNs = []
+		for(i in this.TVs){
+			let DeviceName = this.TVs[i].DeviceName
+			FNs[i]=this.TVs[i].GetStatus()
+		}	
+		Promise.all(FNs)
+		.then(function(values) {
+			if(cb){ cb.send(values) }
+		}).catch(function(errs){
+			console.log(errs)
+		})
+	}
 }
-*/
+
 
 function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
 	if(Scheme == "RK"){
