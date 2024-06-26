@@ -1,53 +1,56 @@
-### Usage
-	Use ./WebServer/RunServer.bat to spin up the webserver on port 3000
+## Usage
+Use `./WebServer/RunServer.bat` to spin up the webserver on port 3000
 
-### Requirements
-	`node.js`
-	`npm`
+## Requirements
 
-### Installation
-	Setup is rather involved.
-		1) TVs need to be properly configured to accept remote commands. See `Maintainence Info`
-		2) the Android Debug Tool (adb.exe) need to be added to the PATH
++ `node.js`
++ `npm`
 
-### Author
+## Installation
+Setup is rather involved.
+1. TVs need to be properly configured to accept remote commands. See `Maintainence Info`
+2. The Android Debug Tool (adb.exe) need to be added to the PATH
+3. Pray (to the Right Guy™️)
+
+## Author
 	Evan Kupsch
 	6/2024
 	ievank@me.com
 	908-705-1908
 
 
-### Project Layout
-	`./README.txt`		- You're doing that
-	`./etc/`			- External Files/Tools.
-		`platform-tools/`		- Android Debug Toolkit (windows)
-	`./Schedule/*`		- a file tree that dictates the schedule for opening/closing
-	`./RunSchedule.bat`	- used by Task Scheduler to automate api calls to the server.
+## Project Layout
+	./README.txt		- You're doing that
+	./etc/			- External Files/Tools.
+		platform-tools/		- Android Debug Toolkit (windows)
+	./Schedule/*		- a file tree that dictates the schedule for opening/closing
+	./RunSchedule.bat	- used by Task Scheduler to automate api calls to the server.
 	
-	`./WebServer/`		- The webserver itself!	
-		`etc/`				- Data Files used by Server. Config files and the like
-		`logs/`				- What else?
-		`resources/`		- Files served to the clients. Everything in this folder is public!
-		`views/`				- HTML files served to clients. Not public - only static pathing is used for retrieving views
-		`src/`				- Source Folder. Modules inside can be imported with `require("src/Module")`
-			`ControlAPI.js`		- The module which controls TVs
-			`main.js`			- The Webserver
-		`RunServer.bat`		- Batch script to launch the server
+	./WebServer/		- The webserver itself!	
+		etc/			- Data Files used by Server. Config files and the like
+		logs/			- What else?
+		resources/		- Files served to the clients. Everything in this folder is public!
+		views/			- HTML files served to clients. Not public - only static pathing is used for retrieving views
+		src/			- Source Folder. Modules inside can be imported with `require("src/Module")`
+			ControlAPI.js		- The module which controls TVs
+			main.js			- The Webserver
+		RunServer.bat		- Batch script to launch the server
 	
 
 
-### Maintainence Info
-	The only files which should ever need maintainence will be 
-		* `./Schedule/*`
-			+ These are schedule files. They should be pretty intuitive.
-		* `./WebServer/etc/`
-			* `Areas.json`	- Zones of the Store
-			* `TVs.json`	- Data for each TV
-		* `./WebServer/views/index.html`	- The main view for TVs. New TVs/Areas must be added.
+## Maintainence Info
+The only files which should ever need maintainence will be 
+* `./Schedule/*`
+	+ These are schedule files. They should be pretty intuitive.
+* `./WebServer/etc/`
+	* `Areas.json`	- Zones of the Store
+	* `TVs.json`	- Data for each TV
+* `./WebServer/views/index.html`
+	+ The main view for TVs. New TVs/Areas must be added.
 		
 	
 	
-	TV Info:
+### TV Info:
 		- Roku (RK):
 			The <arg> of this manufactor is the roku plugin id you want to display after powering on. 
 				For TVs that use a physical input, keep the number as 0 and configure them to power on to that input
