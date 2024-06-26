@@ -12,6 +12,7 @@ const axios = ax.create({
 });
 
 
+// this object will be exported by this module
 const Control = {
 	All: {},
 	Bays: {},
@@ -20,7 +21,8 @@ const Control = {
 }
 
 
-
+// Base TV class - has no actual functionality
+// Has two arguments: the TV IP and the TV name. 
 class TV {
 	constructor(IP, DeviceName){
 		this.IP = IP
@@ -40,6 +42,9 @@ class TV {
 	}
 }
 
+
+// Roku TV class
+// the 3rd argument is the id of the plugin you want the tv to launch at startup
 class RokuTV extends TV {
 	constructor(IP, DeviceName, StartupPluginID){
 		super(IP, DeviceName)
@@ -138,6 +143,11 @@ class RokuTV extends TV {
 	
 }
 
+
+// Vizio TV class
+// the 3rd argument is the AuthKey - please read the README
+// the 4th argument is the input name. You can find this by quering the status of the TV
+// the 5th argument is the input hash. This will be next to the input name in the above query.
 class VizioTV extends TV {
 	constructor(IP, DeviceName, AuthKey, inputName, inputHashVal){
 		super(IP, DeviceName)
@@ -248,6 +258,11 @@ class VizioTV extends TV {
 	}
 }
 
+
+// Android TV class
+// 3rd argument is the device's MAC address
+// It may be necessary to send a wake-on-lan packet to these Device
+// But I have not run into this problem in quite some time
 class AndroidTV extends TV {
 	constructor(IP, DeviceName, MAC){
 		super(IP, DeviceName)
@@ -383,7 +398,9 @@ class AndroidTV extends TV {
 	
 }
 
-
+// Control Area class - a group of TV objects.
+// the 1st is a list of every TV name in the control area
+// the 2nd argument is the object loaded from etc/TVs.json. 
 class ControlArea {
 	constructor(TVNameList, AllTVs){
 		this.TVNameList=TVNameList
@@ -439,6 +456,7 @@ class ControlArea {
 }
 
 
+// This function will help load TVs from the json. 
 function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
 	if(Scheme == "RK"){
 		return new RokuTV(IP, Name, Arg1)
@@ -452,24 +470,27 @@ function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
 }
 
 
-Devices = require("./etc/TVs.json")
-Areas = require("./etc/Areas.json")
+Devices = require("./etc/TVs.json")	// An Object containing info on all TVs
+Areas = require("./etc/Areas.json") // An Object which contains info for each Control Area.
 
+// create each TV Object
 let TVs = {}
 for(i in Devices.TVs){ 
 	TVs[i] = TVLoader(...Devices.TVs[i])
 } 
 
-
 Control.TVs = TVs
 Control.All = new ControlArea(Areas.All, TVs)
 
-for( i in Areas.Bays){ 
+// create the Control Areas
+for( i in Areas.Bays ){ 
 	Control.Bays[i] = new ControlArea(Areas.Bays[i], TVs)
 } 
 
-for( i in Areas.Rooms){ 
+for( i in Areas.Rooms ){ 
 	Control.Rooms[i] = new ControlArea(Areas.Rooms[i], TVs)
 } 
 
+// Export the Control object
 exports.Control = Control
+
