@@ -1,6 +1,4 @@
 etc/*
-!/etc/adb_lock
-!/etc/writeback_lock
 
 WebServer/node_modules/*
 WebServer/logs/*
