@@ -1,4 +1,3 @@
-const { spawnSync } = require('child_process');
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
