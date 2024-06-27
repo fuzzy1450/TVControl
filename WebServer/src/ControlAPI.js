@@ -315,6 +315,7 @@ class AndroidTV extends TV {
 			} else {
 				pwr = 0
 				console.log("Error getting status for device " + TVOBJ.DeviceName)
+				console.log(err)
 				console.log("Attempting Reconnect...")
 				return TVOBJ.DeviceConnect()
 				.then(function(res){
