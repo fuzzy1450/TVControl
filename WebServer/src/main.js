@@ -15,6 +15,10 @@ app.get('/', (req, res) => {
   console.log("["+req.ip+"] Requested Index")
 })
 
+app.get('/favicon.ico', (req, res) => {
+	res.sendFile('./resources/favicon.ico', { root: __dirname+"/../" })
+})
+
 app.post('/api/All/:RequestType', (req, res) => {
 	rqID = requestCounter++ 
 	console.time("Req#"+String(rqID))
