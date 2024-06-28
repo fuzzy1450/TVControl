@@ -316,7 +316,6 @@ class AndroidTV extends TV {
 				})
 			} 
 			else {
-				console.log(res)
 				TVOBJ.connected=true
 				return true
 			}
