@@ -48,34 +48,36 @@ class RokuTV extends TV {
 	constructor(IP, DeviceName, StartupPluginID){
 		super(IP, DeviceName)
 		this.StartupPluginID=StartupPluginID
+		this.powerState = 0
 	}
 	
 	PowerOn(cb, retries=10){
 		let TVOBJ = this
-		let pwr = 0
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
 				if(TVOBJ.StartupPluginID!=0){
 					TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
 				} 
-				pwr = 1
+				TVOBJ.powerState = 1
 			} else if(res.status == 202){
-				return TVOBJ.PowerOn(cb, retries)
+				return TVOBJ.PowerOn(null, retries)
 			} else {
 				console.log(res.status)
 				if(retries > 0){
-					return TVOBJ.PowerOn(cb, retries-1)
+					return TVOBJ.PowerOn(null, retries-1)
 				} else {
-					pwr = 0
+					TVOBJ.powerState = 0
 					throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
-			return {name:TVOBJ.DeviceName, powerState:pwr}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
-				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+				if(cb && cb.send){
+					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
+				}
 		})
 		
 		
@@ -101,14 +103,14 @@ class RokuTV extends TV {
 	}
 	
 	PowerOff(cb, retries=10){
-		let pwr = 0
 		let TVOBJ = this
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOff')
 		.then(function (res){
 			if(res.status == 200){
+				TVOBJ.powerState = 0
 				return {name:TVOBJ.DeviceName, powerState:0}
 			} else if (res.status == 202){
-				return {name:TVOBJ.DeviceName, powerState:0}
+				return TVOBJ.PowerOff(null, retries)
 			} else {
 				if (retries>0){
 					return TVOBJ.PowerOff(null, retries-1)
@@ -118,27 +120,26 @@ class RokuTV extends TV {
 			}
 		}).catch(function(err){
 				console.log(err)
-		}).finally(function(res){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0})}
+		}).finally(function(){
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
 		})
 	}
 
 	GetStatus(cb){
-		let pwr = 0
 		let TVOBJ = this
 		return axios.get('http://'+this.IP+':8060/query/device-info')
 		.then(function (res){
 			if(res.status == 200){
 				if(res.data.includes("PowerOn")){
-					pwr = 1
+					TVOBJ.powerState = 1
 				}
 			}
-			return {name:TVOBJ.DeviceName, powerState:pwr}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
 			
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
 		})
 	}
 	
@@ -269,27 +270,67 @@ class AndroidTV extends TV {
 		super(IP, DeviceName)
 		this.MAC=MAC
 		this.connected=false
-		this.DeviceConnect()
+		let TVOBJ=this
+		this.DeviceDisconnect()
+		.finally(function(){
+			TVOBJ.DeviceConnect(10)
+		})
 	}
 	
-	DeviceConnect(retries=10){
-		let TVOBJ = this
-		return exec(`adb.exe connect ${TVOBJ.IP}:5555`)
+	DeviceDisconnect(){
+		let TVOBJ = this 
+		return exec(`adb.exe disconnect ${TVOBJ.IP}:5555`)
 		.then(function(res){
-			if(res.stdout.includes("failed")){
-				throw new Error(TVOBJ.DeviceName + "\t" + res.stdout)
-			}
-			TVOBJ.connected=true
+			TVOBJ.connected=false
 			return true
 		})
 		.catch(function(err){
+			if(err.stderr.includes("no such device")){
+				return true
+			} else {
+				console.log("Failed to disconnect (?)")
+				throw new Error(err)
+			}
+		})
+	}
+	
+	DeviceConnect(retries=1){
+		let TVOBJ = this
+		return exec(`adb.exe connect ${TVOBJ.IP}:5555`)
+		.then(function(res){
+			if(res.stdout.includes("already connected ") || res.stdout.includes("failed")){
+				return TVOBJ.DeviceDisconnect()
+				.then(function(res){
+					if(retries>0){
+						return TVOBJ.DeviceConnect(retries-1)
+					} else {
+						throw new Error(TVOBJ.DeviceName + "\t" + res.stdout)
+					}
+				})
+				.catch(function(err){
+					if(retries>0){
+						return TVOBJ.DeviceConnect(retries-1)
+					} else {
+						throw new Error(TVOBJ.DeviceName + "\t" + err.stderr)
+					}
+				})
+			} 
+			else {
+				console.log(res)
+				TVOBJ.connected=true
+				return true
+			}
+		})
+		.catch(function(err){
+			if(err.stderr.includes("device unauthorized")){
+				throw new Error("The server is not authorized to send commands to "+TVOBJ.DeviceName+". Please reconfigure the device.")
+			}
 			if(retries>0){
 				return TVOBJ.DeviceConnect(retries-1)
 			} else {
-				console.log("Failed to connect to TV " + TVOBJ.DeviceName)
 				console.log(err)
 				TVOBJ.connected=false
-				return false
+				throw new Error("Failed to connect to TV " + TVOBJ.DeviceName)
 			}
 		});
 	}
@@ -299,43 +340,49 @@ class AndroidTV extends TV {
 		
 		if(TVPass){TVOBJ=TVPass}
 		
-		let pwr = 0
-		return exec(`adb.exe -s ${this.IP}:5555 shell dumpsys power`)
-		.then(function(res){
-			
-			if(res.stdout.includes("Display Power: state=OFF")){
-				pwr = 0
-			} else {
-				pwr = 1
-			}
-			return {name:TVOBJ.DeviceName, powerState:pwr}
-		}).catch(function(err){
-			if(retries>0){
-				return TVOBJ.GetStatus(cb, retries-1)
-			} else {
-				pwr = 0
-				console.log("Error getting status for device " + TVOBJ.DeviceName)
-				console.log(err)
-				console.log("Attempting Reconnect...")
-				return TVOBJ.DeviceConnect()
-				.then(function(res){
-					if(res){
-						console.log("Reconnected to " + TVOBJ.DeviceName)
-						return TVOBJ.GetStatus(cb, 5)
-					} else {
-						console.log("Reconnect Failed for " + TVOBJ.DeviceName)	
-						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
-					}
-					
-				}).catch(function(err){
-					console.log("Reconnect Failed for " + TVOBJ.DeviceName)
-					return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
-				})
+		
+		if(TVOBJ.connected){
+			let pwr = 0
+			return exec(`adb.exe -s ${this.IP}:5555 shell dumpsys power`)
+			.then(function(res){
 				
-			}
-		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
-		})
+				if(res.stdout.includes("Display Power: state=OFF")){
+					pwr = 0
+				} else {
+					pwr = 1
+				}
+				return {name:TVOBJ.DeviceName, powerState:pwr}
+			})
+			.catch(function(err){
+				if(retries>0){
+					return TVOBJ.GetStatus(cb, retries-1)
+				}
+			})
+			.finally(function(){
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+			})
+		} 
+		else if(retries>0) {
+			console.log(TVOBJ.DeviceName + " is not Connected. Attempting Reconnect")
+			return TVOBJ.DeviceConnect()
+			.then(function(res){
+				console.log(TVOBJ.DeviceName +" Reconnected Successfuly")
+				return TVOBJ.GetStatus(cb, retries-1)
+			})
+			.catch(function(err){
+				console.log(TVOBJ.DeviceName + " Failed to Connect")
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true})}
+				return {name:TVOBJ.DeviceName, powerState:0, ERR:true}
+			})
+			
+		} else {
+			console.log("GetStatus failed on " + TVOBJ.DeviceName + " after retries.")
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true})}
+			return Promise.reject({name:TVOBJ.DeviceName, powerState:0, ERR:true})
+		}
+		
+		
+		
 		
 	}
 	
