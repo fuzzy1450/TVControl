@@ -468,6 +468,7 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
+			return values
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
@@ -487,6 +488,7 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
+			return values
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
@@ -505,6 +507,7 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
+			return values
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
