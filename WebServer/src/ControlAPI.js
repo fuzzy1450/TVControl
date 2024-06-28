@@ -468,8 +468,12 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
-		}).catch(function(errs){
-			console.log(errs)
+		}).catch(function(err){
+			if(err.code == 'ETIMEDOUT'){
+				console.log("Connection to " + err.address + ":" + err.port + " timed out")
+			} else {
+				console.log(err)
+			}
 		})
 	}
 
@@ -483,8 +487,12 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
-		}).catch(function(errs){
-			console.log(errs)
+		}).catch(function(err){
+			if(err.code == 'ETIMEDOUT'){
+				console.log("Connection to " + err.address + ":" + err.port + " timed out")
+			} else {
+				console.log(err)
+			}
 		})
 	}
 	
@@ -497,8 +505,12 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			if(cb){ cb.send(values) }
-		}).catch(function(errs){
-			console.log(errs)
+		}).catch(function(err){
+			if(err.code == 'ETIMEDOUT'){
+				console.log("Connection to " + err.address + ":" + err.port + " timed out")
+			} else {
+				console.log(err)
+			}
 		})
 	}
 }
