@@ -55,6 +55,7 @@ class RokuTV extends TV {
 	
 	PowerOn(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
@@ -73,12 +74,12 @@ class RokuTV extends TV {
 					throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
-			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
 				if(cb && cb.send){
-					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
+					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})
 				}
 		})
 		
@@ -106,11 +107,12 @@ class RokuTV extends TV {
 	
 	PowerOff(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOff')
 		.then(function (res){
 			if(res.status == 200){
 				TVOBJ.powerState = 0
-				return {name:TVOBJ.DeviceName, powerState:0}
+				return {name:TVOBJ.DeviceName, powerState:0, time:stopwatch.GetTime()}
 			} else if (res.status == 202){
 				return TVOBJ.PowerOff(null, retries)
 			} else {
@@ -123,11 +125,12 @@ class RokuTV extends TV {
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 
 	GetStatus(cb){
+		let stopwatch = new Timer()
 		let TVOBJ = this
 		return axios.get('http://'+this.IP+':8060/query/device-info')
 		.then(function (res){
@@ -136,12 +139,12 @@ class RokuTV extends TV {
 					TVOBJ.powerState = 1
 				}
 			}
-			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 			
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 	
@@ -162,8 +165,8 @@ class VizioTV extends TV {
 	
 	
 	PowerOn(cb, retries=10){
-		
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return this.GetStatus()
 		.then(function(res){
 			if(!res.powerState){
@@ -179,15 +182,15 @@ class VizioTV extends TV {
 							throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
-					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 				}).catch(function (err){
 					console.log(err)
-					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true, time:stopwatch.GetTime()}
 				})
 			}
 		})
 		.finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 	
@@ -211,6 +214,7 @@ class VizioTV extends TV {
 	
 	PowerOff(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
