@@ -30,10 +30,10 @@ app.post('/api/All/:RequestType', (req, res) => {
 	
 	TvAPI.Control[ObjClass][ReqType](res)
 	.then(function(value){
-		console.debug("["+req.ip+"] Answered Request for "+ ObjClass + "//" + ObjClass)	
+		console.debug("["+req.ip+"] Answered "+ReqType+" for "+ ObjClass + "//" + ObjClass)	
 	})
 	.catch(function(err){
-		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjClass+") API Request Error")
+		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjClass+") API Request Error ["+ReqType+"]")
 	})
 	.finally(function(){
 		console.timeEnd("Req#"+String(rqID))	
@@ -53,10 +53,10 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
 	.then(function(value){
-		console.debug("["+req.ip+"] Answered Request for "+ ObjClass + "//" + ObjName)	
+		console.debug("["+req.ip+"] Answered "+ ReqType +" for "+ ObjClass + "//" + ObjName)	
 	})
 	.catch(function(err){
-		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjName + ") API Request Error")
+		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjName + ") API Request Error ["+ReqType+"]")
 	})
 	.finally(function(){
 		console.timeEnd("Req#"+String(rqID))	
