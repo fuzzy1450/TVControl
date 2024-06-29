@@ -53,10 +53,10 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
 	.then(function(value){
-		console.debug("["+req.ip+"] Answered Request for "+ ObjClass + "//" + ObjClass)	
+		console.debug("["+req.ip+"] Answered Request for "+ ObjClass + "//" + ObjName)	
 	})
 	.catch(function(err){
-		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjClass+") API Request Error")
+		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjName + ") API Request Error")
 	})
 	.finally(function(){
 		console.timeEnd("Req#"+String(rqID))	
