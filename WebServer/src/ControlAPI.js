@@ -472,7 +472,11 @@ class ControlArea {
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
-			} else {
+			} 
+			else if(err.code == 'ECONNRESET'){
+				console.log("Connection failed - Socket Hung Up")
+			}
+			else {
 				console.log(err)
 			}
 		})
@@ -492,7 +496,11 @@ class ControlArea {
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
-			} else {
+			} 
+			else if(err.code == 'ECONNRESET'){
+				console.log("Connection failed - Socket Hung Up")
+			}
+			else {
 				console.log(err)
 			}
 		})
@@ -511,7 +519,11 @@ class ControlArea {
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
-			} else {
+			} 
+			else if(err.code == 'ECONNRESET'){
+				console.log("Connection failed - Socket Hung Up")
+			}
+			else {
 				console.log(err)
 			}
 		})
