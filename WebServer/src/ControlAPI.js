@@ -327,7 +327,7 @@ class AndroidTV extends TV {
 			}
 		})
 		.catch(function(err){
-			if(err.stderr.includes("device unauthorized")){
+			if(err.stderr && err.stderr.includes("device unauthorized")){
 				throw new Error("The server is not authorized to send commands to "+TVOBJ.DeviceName+". Please reconfigure the device.")
 			}
 			if(retries>0){
