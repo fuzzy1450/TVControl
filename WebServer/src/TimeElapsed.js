@@ -26,6 +26,26 @@ class TimeElapsed {
 	
 	toString(){
 		let T = this.GetTime()
+		return TimeToString(T)
+	}
+
+}
+
+class TimeSummary{
+	constructor(count, min, max, sum, avg){
+		this.count = count
+		this.min = min
+		this.max = max
+		this.sum = sum
+		this.avg = avg
+	}
+	
+	toString(){
+		return `TimeStats | count:${this.count} | min:${TimeToString(this.min)} | max:${TimeToString(this.max)} | sum:${TimeToString(this.sum)} | avg:${TimeToString(this.avg)}`
+	}
+}
+
+
 function TimeToString(T){
 		let ms, s, M, H
 		if(T < 1000) {
@@ -48,8 +68,34 @@ function TimeToString(T){
 			return `${H}H:${M}m:${s}s`
 		}
 	}
+
+function Summarize(Ts){
+		let sum = 0
+		let avg = 0
+		let min = -1
+		let max = -1
+		let n=0
+		for(i in Ts){
+			let T = Ts[i]
+			sum+=T
+			if(min==-1 || T < min){
+				min = T
+			}
+			if(max==-1 || T > max){
+				max = T
+			}
+			n++
+		}
+		
+		avg = sum/n
+		
+		return new TimeSummary(n, min, max, sum, avg)
+	}
+
 TimerUtils = {
 	TimeToString: TimeToString,
+	Summarize: Summarize
 }
 
 exports.Timer = TimeElapsed
+exports.TimerUtils = TimerUtils
