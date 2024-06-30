@@ -26,6 +26,8 @@ class TimeElapsed {
 	
 	toString(){
 		let T = this.GetTime()
+function TimeToString(T){
+		let ms, s, M, H
 		if(T < 1000) {
 			ms = T.toFixed(3)
 			return `${ms}ms`
@@ -46,6 +48,8 @@ class TimeElapsed {
 			return `${H}H:${M}m:${s}s`
 		}
 	}
+TimerUtils = {
+	TimeToString: TimeToString,
 }
 
 exports.Timer = TimeElapsed
