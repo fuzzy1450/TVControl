@@ -279,7 +279,7 @@ class AndroidTV extends TV {
 		let TVOBJ=this
 		this.DeviceDisconnect()
 		.finally(function(){
-			TVOBJ.DeviceConnect(10)
+			TVOBJ.GetStatus()
 		})
 	}
 	
@@ -310,14 +310,14 @@ class AndroidTV extends TV {
 					if(retries>0){
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
-						throw new Error(TVOBJ.DeviceName + "\t" + res.stdout)
+						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + res.stdout)
 					}
 				})
 				.catch(function(err){
 					if(retries>0){
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
-						throw new Error(TVOBJ.DeviceName + "\t" + err.stderr)
+						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + err.stderr)
 					}
 				})
 			} 
@@ -327,15 +327,14 @@ class AndroidTV extends TV {
 			}
 		})
 		.catch(function(err){
-			if(err.stderr && err.stderr.includes("device unauthorized")){
+			if(err.stderr && (err.stderr.includes("device unauthorized") || err.stderr.includes("failed to authenticate"))){
 				throw new Error("The server is not authorized to send commands to "+TVOBJ.DeviceName+". Please reconfigure the device.")
 			}
-			if(retries>0){
+			else if(retries > 0 && !err.message.includes("after retries.")){
 				return TVOBJ.DeviceConnect(retries-1)
 			} else {
-				console.log(err)
 				TVOBJ.connected=false
-				throw new Error("Failed to connect to TV " + TVOBJ.DeviceName)
+				throw new Error("Failed to connect to TV " + TVOBJ.DeviceName + " after retries.")
 			}
 		});
 	}
