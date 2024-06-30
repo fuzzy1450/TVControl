@@ -1,6 +1,8 @@
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
+const { Timer, TimerUtils } = require("src/TimeElapsed")
+
 
 const https = require('https')
 const ax = require('axios');
@@ -53,6 +55,7 @@ class RokuTV extends TV {
 	
 	PowerOn(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
@@ -71,12 +74,12 @@ class RokuTV extends TV {
 					throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 				}
 			}
-			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
 				if(cb && cb.send){
-					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
+					cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})
 				}
 		})
 		
@@ -104,11 +107,12 @@ class RokuTV extends TV {
 	
 	PowerOff(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOff')
 		.then(function (res){
 			if(res.status == 200){
 				TVOBJ.powerState = 0
-				return {name:TVOBJ.DeviceName, powerState:0}
+				return {name:TVOBJ.DeviceName, powerState:0, time:stopwatch.GetTime()}
 			} else if (res.status == 202){
 				return TVOBJ.PowerOff(null, retries)
 			} else {
@@ -121,11 +125,12 @@ class RokuTV extends TV {
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 
 	GetStatus(cb){
+		let stopwatch = new Timer()
 		let TVOBJ = this
 		return axios.get('http://'+this.IP+':8060/query/device-info')
 		.then(function (res){
@@ -134,12 +139,12 @@ class RokuTV extends TV {
 					TVOBJ.powerState = 1
 				}
 			}
-			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 			
 		}).catch(function(err){
 				console.log(err)
 		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 	
@@ -160,8 +165,8 @@ class VizioTV extends TV {
 	
 	
 	PowerOn(cb, retries=10){
-		
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return this.GetStatus()
 		.then(function(res){
 			if(!res.powerState){
@@ -177,15 +182,15 @@ class VizioTV extends TV {
 							throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
-					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 				}).catch(function (err){
 					console.log(err)
-					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true, time:stopwatch.GetTime()}
 				})
 			}
 		})
 		.finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 	
@@ -209,6 +214,7 @@ class VizioTV extends TV {
 	
 	PowerOff(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
@@ -223,20 +229,21 @@ class VizioTV extends TV {
 							throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 						}
 					}
-					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 				}).catch(function (err){
 					console.log(err)
 				})
 			}
 		})
 		.finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
 		})
 	}
 
 
 	GetStatus(cb){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return axios.get('https://'+this.IP+':7345/state/device/power_mode', {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
 			if(res.status == 200){
@@ -248,13 +255,13 @@ class VizioTV extends TV {
 			} else {
 				TVOBJ.powerState = 0
 			}
-			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 		}).catch(function(err){
 			console.log(err)
-			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true}
+			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:true, time:stopwatch.GetTime()}
 		}).finally(function(res){
 			if(cb){
-				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState})
+				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})
 			}
 		})
 	}
@@ -335,9 +342,8 @@ class AndroidTV extends TV {
 	
 	GetStatus(cb, retries=10, TVPass){
 		let TVOBJ = this
-		
+		let stopwatch = new Timer()
 		if(TVPass){TVOBJ=TVPass}
-		
 		
 		if(TVOBJ.connected){
 			let pwr = 0
@@ -349,7 +355,7 @@ class AndroidTV extends TV {
 				} else {
 					pwr = 1
 				}
-				return {name:TVOBJ.DeviceName, powerState:pwr}
+				return {name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()}
 			})
 			.catch(function(err){
 				if(retries>0){
@@ -357,7 +363,7 @@ class AndroidTV extends TV {
 				}
 			})
 			.finally(function(){
-				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
 			})
 		} 
 		else if(retries>0) {
@@ -369,14 +375,14 @@ class AndroidTV extends TV {
 			})
 			.catch(function(err){
 				console.log(TVOBJ.DeviceName + " Failed to Connect")
-				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true})}
-				return {name:TVOBJ.DeviceName, powerState:0, ERR:true}
+				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})}
+				return {name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()}
 			})
 			
 		} else {
 			console.log("GetStatus failed on " + TVOBJ.DeviceName + " after retries.")
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true})}
-			return Promise.reject({name:TVOBJ.DeviceName, powerState:0, ERR:true})
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})}
+			return Promise.reject({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})
 		}
 		
 		
@@ -386,6 +392,7 @@ class AndroidTV extends TV {
 	
 	PowerOn(cb, retries=10){
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		let pwr = 0
 		return this.GetStatus()
 		.then(function(TVStatus){
@@ -393,7 +400,7 @@ class AndroidTV extends TV {
 				return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell input keyevent 224`)
 				.then(function(res){
 					pwr = 1
-					return {name:TVOBJ.DeviceName, powerState:pwr}
+					return {name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()}
 				})
 				.catch(function(err){
 					if(retries>0){
@@ -401,28 +408,29 @@ class AndroidTV extends TV {
 						} else {
 							console.log(err)
 							pwr = 0
-							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
+							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 						}
 				})
 			} else {
-				return {name:TVOBJ.DeviceName, powerState:1}
+				return {name:TVOBJ.DeviceName, powerState:1, time:stopwatch.GetTime()}
 			}
 		})
 		.finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
 		})
 	}
 	
 	PowerOff(cb, retries=10){
 		let pwr = 1;
 		let TVOBJ = this
+		let stopwatch = new Timer()
 		return this.GetStatus()
 		.then(function(TVStatus){
 			if(TVStatus.powerState){
 				return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell input keyevent 223`)
 				.then(function(res){
 					pwr = 0
-					return {name:TVOBJ.DeviceName, powerState:pwr}
+					return {name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()}
 				})
 				.catch(function(err){
 					if(retries>0){
@@ -430,15 +438,15 @@ class AndroidTV extends TV {
 						} else {
 							console.log(err)
 							pwr = 0
-							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true}
+							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 						}
 				})
 			} else {
-				return {name:TVOBJ.DeviceName, powerState:0}
+				return {name:TVOBJ.DeviceName, powerState:0, time:stopwatch.GetTime()}
 			};
 		})
 		.finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
 		})
 		
 	}
@@ -466,8 +474,12 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
+			let timeStats = TimerUtils.Summarize(values.map((x)=>x.time))
+			console.debug(timeStats.toString())
+		
 			if(cb){ cb.send(values) }
 			return values
+			
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
@@ -490,8 +502,11 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
+			let timeStats = TimerUtils.Summarize(values.map((x)=>x.time))
+			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
 			return values
+			
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")
@@ -513,8 +528,11 @@ class ControlArea {
 		}	
 		return Promise.all(FNs)
 		.then(function(values) {
+			let timeStats = TimerUtils.Summarize(values.map((x)=>x.time))
+			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
 			return values
+			
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
 				console.log("Connection to " + err.address + ":" + err.port + " timed out")

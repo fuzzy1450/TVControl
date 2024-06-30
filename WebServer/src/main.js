@@ -1,4 +1,5 @@
-TvAPI = require("src/ControlAPI")
+const { Timer, TimerUtils } = require("src/TimeElapsed")
+const TvAPI = require("src/ControlAPI")
 
 
 const express = require('express')
@@ -21,7 +22,7 @@ app.get('/favicon.ico', (req, res) => {
 
 app.post('/api/All/:RequestType', (req, res) => {
 	let rqID = requestCounter++ 
-	console.time("Req#"+String(rqID))
+	let stopwatch = new Timer()
 	let ObjClass = "All"
 	let ReqType = req.params.RequestType
 	
@@ -30,19 +31,16 @@ app.post('/api/All/:RequestType', (req, res) => {
 	
 	TvAPI.Control[ObjClass][ReqType](res)
 	.then(function(value){
-		console.debug("["+req.ip+"] Answered "+ReqType+" for "+ ObjClass + "//" + ObjClass)	
+		console.debug("["+req.ip+"] Answered "+ReqType+" for "+ ObjClass + "//" + ObjClass + " ("+stopwatch+")")	
 	})
 	.catch(function(err){
-		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjClass+") API Request Error ["+ReqType+"]")
-	})
-	.finally(function(){
-		console.timeEnd("Req#"+String(rqID))	
+		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjClass+") API Request Error ["+ReqType+"]("+stopwatch+")")
 	})
 })
 
 app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	let rqID = requestCounter++
-	console.time("Req#"+String(rqID))
+	let stopwatch = new Timer()
 	let ObjClass = req.params.className
 	let ObjName = req.params.objName
 	let ReqType = req.params.RequestType
@@ -53,13 +51,10 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
 	.then(function(value){
-		console.debug("["+req.ip+"] Answered "+ ReqType +" for "+ ObjClass + "//" + ObjName)	
+		console.debug("["+req.ip+"] Answered "+ ReqType +" for "+ ObjClass + "//" + ObjName + " ("+stopwatch+")")	
 	})
 	.catch(function(err){
-		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjName + ") API Request Error ["+ReqType+"]")
-	})
-	.finally(function(){
-		console.timeEnd("Req#"+String(rqID))	
+		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjName + ") API Request Error ["+ReqType+"]("+stopwatch+")")
 	})
 })
 
