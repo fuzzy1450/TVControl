@@ -18,10 +18,10 @@ class TimeElapsed {
 	}
 	
 	GetTime(){
-		if(endTime != -1){
-			return UpdateTimer()
+		if(this.endTime == -1){
+			return this.UpdateTimer()
 		}
-		return this.endTime-this.startTime
+		return this.startTime-this.endTime
 	}
 	
 	toString(){
