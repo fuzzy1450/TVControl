@@ -8,7 +8,7 @@ const https = require('https')
 const ax = require('axios');
 const axios = ax.create({
   httpsAgent: new https.Agent({  
-    rejectUnauthorized: false
+    rejectUnauthorized: false	// important for Vizio Control
   })
 });
 
@@ -279,8 +279,8 @@ class AndroidTV extends TV {
 		this.connected=false
 		let TVOBJ=this
 		this.DeviceDisconnect()
-		.finally(function(){
-			TVOBJ.GetStatus()
+		.finally(function(){ // the Android TVs state is remembered by the program
+			TVOBJ.GetStatus()// so we must find out what it is.
 		})
 	}
 	
@@ -577,9 +577,11 @@ for(i in Devices.TVs){
 } 
 
 Control.TVs = TVs
-Control.All = new ControlArea(Areas.All, TVs)
+
 
 // create the Control Areas
+Control.All = new ControlArea(Areas.All, TVs)
+
 for( i in Areas.Bays ){ 
 	Control.Bays[i] = new ControlArea(Areas.Bays[i], TVs)
 } 
