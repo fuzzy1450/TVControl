@@ -1,15 +1,15 @@
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
-const { Timer, TimerUtils } = require("src/TimeElapsed")
+const { Timer, TimerUtils } = require("src/TimeElapsed");
 
 
-const https = require('https')
-const ax = require('axios');
-const axios = ax.create({
-  httpsAgent: new https.Agent({  
-    rejectUnauthorized: false	// important for Vizio Control
-  })
+const https = require("https");
+const ax = require("axios");
+const axios = ax.create({ 
+	httpsAgent: new https.Agent({
+		rejectUnauthorized: false //Important for Vizio TVs
+	}) 
 });
 
 
@@ -19,7 +19,7 @@ const Control = {
 	Bays: {},
 	Rooms: {},
 	TVs: {}
-}
+};
 
 
 // Base TV class - has no actual functionality
