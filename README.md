@@ -9,7 +9,7 @@ Use `./WebServer/RunServer.bat` to spin up the webserver on port 3000
 ## Installation
 Setup is rather involved.
 1. TVs need to be properly configured to accept remote commands. See `Maintainence Info`
-2. The Android Debug Tool (adb.exe) need to be added to the PATH
+2. The Android Debug Tool (adb.exe) needs to be added to the PATH
 3. Pray (to the Right Guy™️)
 
 ## Author
@@ -42,6 +42,7 @@ Setup is rather involved.
 The only files which should ever need maintainence will be 
 * `./Schedule/*`
 	+ These are schedule files. They should be pretty intuitive.
+	+ Look at the commits/changes if you need help.
 * `./WebServer/etc/`
 	* `Areas.json`	- Zones of the Store
 	* `TVs.json`	- Data for each TV
