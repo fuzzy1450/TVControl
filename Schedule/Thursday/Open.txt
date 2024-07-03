@@ -10,3 +10,5 @@ PoolHallEast
 PoolHallWest
 MonroeLeft
 MonroeRight
+HudsonLeft
+HudsonRight

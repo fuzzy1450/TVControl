@@ -15,3 +15,5 @@ PingPongMiddle
 PingPongSouth
 BoardGameWest
 BoardGameEast
+HudsonLeft
+HudsonRight
