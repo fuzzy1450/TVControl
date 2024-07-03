@@ -4,7 +4,8 @@
   "description": "Webserver that provides visual control of displays in PlayHoboken",
   "main": "main.js",
   "scripts": {
-    "start": "node src/main.js"
+    "start": "node src/main.js",
+	"lint": "npx eslint src/*"
   },
   "author": "Evan Kupsch",
   "license": "ISC",
