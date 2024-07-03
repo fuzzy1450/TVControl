@@ -20,8 +20,9 @@ class TimeElapsed {
 	GetTime(){
 		if(this.endTime == -1){
 			return this.UpdateTimer()
+		} else {
+			return this.startTime-this.endTime
 		}
-		return this.startTime-this.endTime
 	}
 	
 	toString(){
