@@ -474,7 +474,8 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
-			let timeStats = TimerUtils.Summarize(values.map((x)=>x.time))
+			values.map((x)=>console.log(x))
+			let timeStats = TimerUtils.Summarize(values.map((x)=>(x.time ? x.time : -1)))
 			console.debug(timeStats.toString())
 		
 			if(cb){ cb.send(values) }
@@ -502,7 +503,8 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
-			let timeStats = TimerUtils.Summarize(values.map((x)=>x.time))
+			values.map((x)=>console.log(x))
+			let timeStats = TimerUtils.Summarize(values.map((x)=>(x.time ? x.time : -1)))
 			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
 			return values
@@ -528,7 +530,8 @@ class ControlArea {
 		}	
 		return Promise.all(FNs)
 		.then(function(values) {
-			let timeStats = TimerUtils.Summarize(values.map((x)=>x.time))
+			
+			let timeStats = TimerUtils.Summarize(values.map((x)=>(x.time ? x.time : console.log(x))))
 			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
 			return values
