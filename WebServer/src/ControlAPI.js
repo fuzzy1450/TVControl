@@ -384,10 +384,6 @@ class AndroidTV extends TV {
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})}
 			return Promise.reject({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})
 		}
-		
-		
-		
-		
 	}
 	
 	PowerOn(cb, retries=10){
@@ -414,6 +410,10 @@ class AndroidTV extends TV {
 			} else {
 				return {name:TVOBJ.DeviceName, powerState:1, time:stopwatch.GetTime()}
 			}
+		})
+		.catch(function(err){
+			pwr = 0
+			return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 		})
 		.finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
@@ -445,6 +445,10 @@ class AndroidTV extends TV {
 				return {name:TVOBJ.DeviceName, powerState:0, time:stopwatch.GetTime()}
 			};
 		})
+		.catch(function(err){
+			pwr = 0
+			return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+		})
 		.finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
 		})
@@ -474,7 +478,6 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
-			values.map((x)=>console.log(x))
 			let timeStats = TimerUtils.Summarize(values.map((x)=>(x.time ? x.time : -1)))
 			console.debug(timeStats.toString())
 		
@@ -503,7 +506,6 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
-			values.map((x)=>console.log(x))
 			let timeStats = TimerUtils.Summarize(values.map((x)=>(x.time ? x.time : -1)))
 			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
