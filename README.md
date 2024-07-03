@@ -84,4 +84,6 @@ The only files which should ever need maintainence will be
 
 
 ### TODO
-Calculate execution time for each TV request, pass those stats to the client.
+
+Save each reported Request Time, with each tv
+Then, render delay-over-time graphs per TV / Bay, to monitor performance
