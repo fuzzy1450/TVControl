@@ -62,7 +62,7 @@ class RokuTV extends TV {
 				if(TVOBJ.StartupPluginID!=0){
 					return TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
 					.then(function(res){
-						return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
+						return {name:TVOBJ.DeviceName, powerState:res, time:stopwatch.GetTime()}
 					})
 					.catch(function(err){
 						console.log(err)
@@ -102,10 +102,12 @@ class RokuTV extends TV {
 			} else {
 				throw new Error(`Could not connect to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
 			}
-		}).catch(function(err){
+		})
+		.catch(function(err){
 			if (retries>0){
 					return TVOBJ.LaunchApp(appID, retries-1)
 				} else {
+					console.log(err)
 					throw new Error("Failed to launch app on device "+TVOBJ.DeviceName+" - max retries reached")
 				}
 		})
@@ -183,9 +185,9 @@ class VizioTV extends TV {
 						TVOBJ.powerState=1
 						return TVOBJ.LaunchApp()
 						.then(function(res){
-							return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
+							return {name:TVOBJ.DeviceName, powerState:res, time:stopwatch.GetTime()}
 						})
-						.catch(function(err){
+						.catch(function(){
 							throw new Error(`Could not change input on ${TVOBJ.DeviceName}`)
 						})
 					} else {
@@ -224,6 +226,7 @@ class VizioTV extends TV {
 			if(retries > 0){
 				return TVOBJ.LaunchApp(retries-1)
 			} else {
+				console.log(err)
 				throw new Error("Failed to change input for TV "+TVOBJ.DeviceName+" - max retries reached")
 			}
 		})
@@ -279,9 +282,12 @@ class VizioTV extends TV {
 				TVOBJ.powerState = 0
 			}
 			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
-		}).catch(function(err){
+		})
+		.catch(function(err){
+			console.log(err)
 			throw new Error(`Could not get status for ${TVOBJ.DeviceName}`)
-		}).finally(function(res){
+		})
+		.finally(function(){
 			if(cb){
 				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})
 			}
@@ -309,7 +315,7 @@ class AndroidTV extends TV {
 	DeviceDisconnect(){
 		let TVOBJ = this 
 		return exec(`adb.exe disconnect ${TVOBJ.IP}:5555`)
-		.then(function(res){
+		.then(function(){
 			TVOBJ.connected=false
 			return true
 		})
@@ -371,7 +377,6 @@ class AndroidTV extends TV {
 			let pwr = 0
 			return exec(`adb.exe -s ${this.IP}:5555 shell dumpsys power`)
 			.then(function(res){
-				
 				if(res.stdout.includes("Display Power: state=OFF")){
 					pwr = 0
 				} else {
@@ -382,6 +387,9 @@ class AndroidTV extends TV {
 			.catch(function(err){
 				if(retries>0){
 					return TVOBJ.GetStatus(cb, retries-1)
+				} else {
+					console.log(err)
+					throw new Error(`Failed to get status for device ${TVOBJ.DeviceName} - max retries reached.`)
 				}
 			})
 			.finally(function(){
@@ -391,14 +399,13 @@ class AndroidTV extends TV {
 		else if(retries>0) {
 			console.log(TVOBJ.DeviceName + " is not Connected. Attempting Reconnect")
 			return TVOBJ.DeviceConnect()
-			.then(function(res){
+			.then(function(){
 				console.log(TVOBJ.DeviceName +" Reconnected Successfuly")
 				return TVOBJ.GetStatus(cb, retries-1)
 			})
-			.catch(function(err){
-				console.log(TVOBJ.DeviceName + " Failed to Connect")
-				if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})}
-				return {name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()}
+			.catch(function(){
+				console.log(`Failed to reconnect to ${TVOBJ.DeviceName}. ${retries} retries remaining.`)
+				return TVOBJ.GetStatus(cb, retries-1)
 			})
 			
 		} else {
@@ -416,26 +423,25 @@ class AndroidTV extends TV {
 		.then(function(TVStatus){
 			if(!TVStatus.powerState){
 				return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell input keyevent 224`)
-				.then(function(res){
+				.then(function(){
 					pwr = 1
 					return {name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()}
 				})
-				.catch(function(err){
-					if(retries>0){
-							return TVOBJ.PowerOn(cb, retries-1)
-						} else {
-							console.log(err)
-							pwr = 0
-							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
-						}
+				.catch(function(){
+					throw new Error(`Failed to PowerOn ${TVOBJ.DeviceName}`)
 				})
 			} else {
 				return {name:TVOBJ.DeviceName, powerState:1, time:stopwatch.GetTime()}
 			}
 		})
 		.catch(function(err){
-			pwr = 0
-			return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+			if(retries>0){
+				return TVOBJ.PowerOn(cb, retries-1)
+			} else {
+				console.log(err)
+				pwr = 0
+				throw new Error(`Failed to PowerOn ${TVOBJ.DeviceName} - max retries reached.`)
+			}
 		})
 		.finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
@@ -450,26 +456,25 @@ class AndroidTV extends TV {
 		.then(function(TVStatus){
 			if(TVStatus.powerState){
 				return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell input keyevent 223`)
-				.then(function(res){
+				.then(function(){
 					pwr = 0
 					return {name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()}
 				})
-				.catch(function(err){
-					if(retries>0){
-							return TVOBJ.PowerOff(null, retries-1)
-						} else {
-							console.log(err)
-							pwr = 0
-							return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
-						}
+				.catch(function(){
+					throw new Error(`Failed to PowerOff ${TVOBJ.DeviceName}`)
 				})
 			} else {
 				return {name:TVOBJ.DeviceName, powerState:0, time:stopwatch.GetTime()}
 			};
 		})
 		.catch(function(err){
-			pwr = 0
-			return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+			if(retries>0){
+				return TVOBJ.PowerOff(null, retries-1)
+			} else {
+				console.log(err)
+				pwr = 0
+				throw new Error(`Failed to PowerOff ${TVOBJ.DeviceName} - max retries reached.`)
+			}
 		})
 		.finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:pwr, time:stopwatch.GetTime()})}
@@ -486,16 +491,14 @@ class ControlArea {
 	constructor(TVNameList, AllTVs){
 		this.TVNameList=TVNameList
 		this.TVs = []
-		for(i in this.TVNameList){
+		for(let i in this.TVNameList){
 			this.TVs.push(AllTVs[this.TVNameList[i]])
 		}
 	}
 	
 	PowerOn(cb){
 		let FNs = []
-		for(i in this.TVs){
-			let DeviceName = this.TVs[i].DeviceName
-			
+		for(let i in this.TVs){
 			FNs[i]=this.TVs[i].PowerOn()
 		}
 		return Promise.all(FNs)
@@ -522,9 +525,7 @@ class ControlArea {
 
 	PowerOff(cb){
 		let FNs = []
-		for(i in this.TVs){
-			let DeviceName = this.TVs[i].DeviceName
-			
+		for(let i in this.TVs){
 			FNs[i]=this.TVs[i].PowerOff()
 		}
 		return Promise.all(FNs)
@@ -550,8 +551,7 @@ class ControlArea {
 	
 	GetStatus(cb){
 		let FNs = []
-		for(i in this.TVs){
-			let DeviceName = this.TVs[i].DeviceName
+		for(let i in this.TVs){
 			FNs[i]=this.TVs[i].GetStatus()
 		}	
 		return Promise.all(FNs)
@@ -592,12 +592,12 @@ function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
 }
 
 
-Devices = require("etc/TVs.json")	// An Object containing info on all TVs
-Areas = require("etc/Areas.json") // An Object which contains info for each Control Area.
+const Devices = require("etc/TVs.json");	// An Object containing info on all TVs
+const Areas = require("etc/Areas.json");	// An Object which contains info for each Control Area.
 
 // create each TV Object
 let TVs = {}
-for(i in Devices.TVs){ 
+for(let i in Devices.TVs){ 
 	TVs[i] = TVLoader(...Devices.TVs[i])
 } 
 
@@ -607,11 +607,11 @@ Control.TVs = TVs
 // create the Control Areas
 Control.All = new ControlArea(Areas.All, TVs)
 
-for( i in Areas.Bays ){ 
+for(let i in Areas.Bays){ 
 	Control.Bays[i] = new ControlArea(Areas.Bays[i], TVs)
 } 
 
-for( i in Areas.Rooms ){ 
+for(let i in Areas.Rooms){ 
 	Control.Rooms[i] = new ControlArea(Areas.Rooms[i], TVs)
 } 
 

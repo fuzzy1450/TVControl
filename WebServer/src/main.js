@@ -1,4 +1,4 @@
-const { Timer, TimerUtils } = require("src/TimeElapsed")
+const { Timer } = require("src/TimeElapsed")
 const TvAPI = require("src/ControlAPI")
 
 
@@ -6,7 +6,6 @@ const express = require('express')
 
 const app = express()
 const port = 3000
-let requestCounter=0
 
 app.set('view engine', 'ejs');
 
@@ -21,7 +20,6 @@ app.get('/favicon.ico', (req, res) => {
 })
 
 app.post('/api/All/:RequestType', (req, res) => {
-	let rqID = requestCounter++ 
 	let stopwatch = new Timer()
 	let ObjClass = "All"
 	let ReqType = req.params.RequestType
@@ -30,16 +28,16 @@ app.post('/api/All/:RequestType', (req, res) => {
 	console.log("["+req.ip+"] Requested " + ReqType + " for " + ObjClass + "//" + ObjClass)
 	
 	TvAPI.Control[ObjClass][ReqType](res)
-	.then(function(value){
+	.then(function(){
 		console.debug("["+req.ip+"] Answered "+ReqType+" for "+ ObjClass + "//" + ObjClass + " ("+stopwatch+")")	
 	})
 	.catch(function(err){
+		console.log(err)
 		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjClass+") API Request Error ["+ReqType+"]("+stopwatch+")")
 	})
 })
 
 app.post('/api/:className/:objName/:RequestType', (req, res) => {
-	let rqID = requestCounter++
 	let stopwatch = new Timer()
 	let ObjClass = req.params.className
 	let ObjName = req.params.objName
@@ -50,16 +48,17 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	
 	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
-	.then(function(value){
+	.then(function(){
 		console.debug("["+req.ip+"] Answered "+ ReqType +" for "+ ObjClass + "//" + ObjName + " ("+stopwatch+")")	
 	})
 	.catch(function(err){
+		console.log(err)
 		console.log("["+req.ip+"] ("+ ObjClass + "//" + ObjName + ") API Request Error ["+ReqType+"]("+stopwatch+")")
 	})
 })
 
 app.get('/resources/:resource', (req, res) => {
-	ResourceName = req.params.resource
+	let ResourceName = req.params.resource
 	console.debug("["+req.ip+"] Requested Resource " + ResourceName)
 	res.sendFile(ResourceName, { root: __dirname+"/../resources" })
 })

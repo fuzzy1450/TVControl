@@ -76,7 +76,7 @@ function Summarize(Ts){
 		let min = -1
 		let max = -1
 		let n=0
-		for(i in Ts){
+		for(let i in Ts){
 			let T = Ts[i]
 			sum+=T
 			if(min==-1 || T < min){
@@ -93,7 +93,7 @@ function Summarize(Ts){
 		return new TimeSummary(n, min, max, sum, avg)
 	}
 
-TimerUtils = {
+let TimerUtils = {
 	TimeToString: TimeToString,
 	Summarize: Summarize
 }
