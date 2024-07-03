@@ -562,7 +562,7 @@ function TVLoader(Scheme, Name, IP, Arg1, Arg2, Arg3){
 	} else if (Scheme == "VZ") {
 		return new VizioTV(IP, Name, Arg1, Arg2, Arg3)
 	} else {
-		throw new Error("Scheme " + Scheme + " unrecognized")
+		throw new Error(`Scheme ${Scheme} unrecognized for device ${Name} // ${IP} (${Arg1}, ${Arg2}, ${Arg3})`)
 	}
 }
 
