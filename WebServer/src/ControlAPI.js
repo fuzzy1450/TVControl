@@ -529,7 +529,7 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
-			let timeStats = TimerUtils.Summarize(values.map(function(x){if(x.time){return x.time}else{console.log(x)};return x}))
+			let timeStats = TimerUtils.Summarize(values.map(function(x){if(x && x.time){return x.time}else{console.log(x)};return x}))
 			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
 			return values
@@ -557,7 +557,7 @@ class ControlArea {
 		return Promise.all(FNs)
 		.then(function(values) {
 			
-			let timeStats = TimerUtils.Summarize(values.map(function(x){if(x){return x.time}else{console.log(x)};return x}))
+			let timeStats = TimerUtils.Summarize(values.map(function(x){if(x && x.time){return x.time}else{console.log(x)};return x}))
 			console.debug(timeStats.toString())
 			if(cb){ cb.send(values) }
 			return values
