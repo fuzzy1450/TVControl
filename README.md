@@ -34,6 +34,7 @@ Setup is rather involved.
 		src/			- Source Folder. Modules inside can be imported with `require("src/Module")`
 			ControlAPI.js		- The module which controls TVs
 			main.js			- The Webserver
+			TimeElapsed.js		- A time tracking module
 		RunServer.bat		- Batch script to launch the server
 	
 
