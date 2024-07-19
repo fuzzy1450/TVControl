@@ -1,0 +1,5 @@
+PingPongNorth
+PingPongSouth
+PingPongMiddle
+BoardGameEast
+BoardGameWest
