@@ -401,11 +401,13 @@ class AndroidTV extends TV {
 					return TVOBJ.GetStatus(cb, retries-1)
 				} else {
 					if(err.stderr && err.stderr.includes("adb.exe: device offline")){
+						console.log(`Failed to get status for device ${TVOBJ.DeviceName} - device offline.`)
 						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 					} else {
 						console.log(":9:")
 						console.log(err)
-						throw new Error(`Failed to get status for device ${TVOBJ.DeviceName} - max retries reached.`)
+						console.log(`Failed to get status for device ${TVOBJ.DeviceName} - max retries reached.`)
+						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 					}
 				}
 			})
