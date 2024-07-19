@@ -65,6 +65,7 @@ class RokuTV extends TV {
 						return {name:TVOBJ.DeviceName, powerState:res, time:stopwatch.GetTime()}
 					})
 					.catch(function(err){
+						console.log(":12:")
 						console.log(err)
 						return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 					})
@@ -80,6 +81,7 @@ class RokuTV extends TV {
 			if (retries>0){
 				return TVOBJ.PowerOn(null, retries-1)
 			} else {
+				console.log(":13:")
 				console.log(err)
 				throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 			}
@@ -88,9 +90,6 @@ class RokuTV extends TV {
 				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})
 			}
 		})
-		
-		
-		
 	}
 	
 	LaunchApp(appID, retries=5){
@@ -107,6 +106,7 @@ class RokuTV extends TV {
 			if (retries>0){
 					return TVOBJ.LaunchApp(appID, retries-1)
 				} else {
+					console.log(":14:")
 					console.log(err)
 					throw new Error("Failed to launch app on device "+TVOBJ.DeviceName+" - max retries reached")
 				}
@@ -129,6 +129,7 @@ class RokuTV extends TV {
 			if (retries>0){
 				return TVOBJ.PowerOff(null, retries-1)
 			} else {
+				console.log(":15:")
 				console.log(err)
 				throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
 			}
@@ -150,6 +151,7 @@ class RokuTV extends TV {
 			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 			
 		}).catch(function(err){
+				console.log(":1:")
 				console.log(err)
 				throw new Error("Failed to get status for TV "+TVOBJ.DeviceName+" - max retries reached")
 		}).finally(function(){
@@ -195,6 +197,7 @@ class VizioTV extends TV {
 					}
 				})
 				.catch(function (err){
+					console.log(":2:")
 					console.log(err)
 					throw new Error(`Could not connect to ${TVOBJ.DeviceName}`) 
 				})
@@ -204,6 +207,7 @@ class VizioTV extends TV {
 			if (retries>0){
 				return TVOBJ.PowerOn(null, retries-1)
 			} else {
+				console.log(":3:")
 				console.log(err)
 				throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
 			}
@@ -226,6 +230,7 @@ class VizioTV extends TV {
 			if(retries > 0){
 				return TVOBJ.LaunchApp(retries-1)
 			} else {
+				console.log(":4:")
 				console.log(err)
 				throw new Error("Failed to change input for TV "+TVOBJ.DeviceName+" - max retries reached")
 			}
@@ -248,6 +253,7 @@ class VizioTV extends TV {
 					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 				})
 				.catch(function (err){
+					console.log(":5:")
 					console.log(err)
 					throw new Error (`Failed to connect to ${TVOBJ.DeviceName}`)
 				})
@@ -257,6 +263,7 @@ class VizioTV extends TV {
 			if(retries > 0){
 				return TVOBJ.PowerOff(null, retries-1)
 			} else {
+				console.log(":6:")
 				console.log(err)
 				throw new Error(`Failed to turn off ${TVOBJ.DeviceName} - max retries reached.`)
 			}
@@ -284,6 +291,7 @@ class VizioTV extends TV {
 			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 		})
 		.catch(function(err){
+			console.log(":7:")
 			console.log(err)
 			throw new Error(`Could not get status for ${TVOBJ.DeviceName}`)
 		})
@@ -346,6 +354,8 @@ class AndroidTV extends TV {
 					if(retries>0){
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
+						console.log(":22:")
+						console.log(err)
 						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + err.stderr)
 					}
 				})
@@ -362,6 +372,8 @@ class AndroidTV extends TV {
 			else if(retries > 0 && !err.message.includes("after retries.")){
 				return TVOBJ.DeviceConnect(retries-1)
 			} else {
+				console.log(":8:")
+				console.log(err)
 				TVOBJ.connected=false
 				throw new Error("Failed to connect to TV " + TVOBJ.DeviceName + " after retries.")
 			}
@@ -388,8 +400,13 @@ class AndroidTV extends TV {
 				if(retries>0){
 					return TVOBJ.GetStatus(cb, retries-1)
 				} else {
-					console.log(err)
-					throw new Error(`Failed to get status for device ${TVOBJ.DeviceName} - max retries reached.`)
+					if(err.stderr && err.stderr.includes("adb.exe: device offline")){
+						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+					} else {
+						console.log(":9:")
+						console.log(err)
+						throw new Error(`Failed to get status for device ${TVOBJ.DeviceName} - max retries reached.`)
+					}
 				}
 			})
 			.finally(function(){
@@ -402,16 +419,38 @@ class AndroidTV extends TV {
 			.then(function(){
 				console.log(TVOBJ.DeviceName +" Reconnected Successfuly")
 				return TVOBJ.GetStatus(cb, retries-1)
+				.then(function(res){
+						return res
+					})
+					.catch(function(err){
+						console.log(":21:")
+						console.log(err)
+						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+					})
 			})
 			.catch(function(){
-				console.log(`Failed to reconnect to ${TVOBJ.DeviceName}. ${retries} retries remaining.`)
-				return TVOBJ.GetStatus(cb, retries-1)
+				if(retries > 0){
+					console.log(`Failed to reconnect to ${TVOBJ.DeviceName}. ${retries} retries remaining.`)
+					return TVOBJ.GetStatus(cb, retries-1)
+					.then(function(res){
+						return res
+					})
+					.catch(function(err){
+						console.log(":21:")
+						console.log(err)
+						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+					})
+						
+						
+				} else {
+					throw new Error(`Failed to reconnect to ${TVOBJ.DeviceName} after retries.`)
+				}
 			})
 			
 		} else {
 			console.log("GetStatus failed on " + TVOBJ.DeviceName + " after retries.")
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})}
-			return Promise.reject({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})
+			throw new Error({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})
 		}
 	}
 	
@@ -438,6 +477,7 @@ class AndroidTV extends TV {
 			if(retries>0){
 				return TVOBJ.PowerOn(cb, retries-1)
 			} else {
+				console.log(":10:")
 				console.log(err)
 				pwr = 0
 				throw new Error(`Failed to PowerOn ${TVOBJ.DeviceName} - max retries reached.`)
@@ -471,6 +511,7 @@ class AndroidTV extends TV {
 			if(retries>0){
 				return TVOBJ.PowerOff(null, retries-1)
 			} else {
+				console.log(":11:")
 				console.log(err)
 				pwr = 0
 				throw new Error(`Failed to PowerOff ${TVOBJ.DeviceName} - max retries reached.`)
