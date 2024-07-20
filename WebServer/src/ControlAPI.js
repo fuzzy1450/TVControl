@@ -31,15 +31,15 @@ class TV {
 	}
 	
 	PowerOn(){
-		throw new Error("PowerOn not implemented for " + this.DeviceName)
+		throw new Error(`PowerOn not implemented for ${this.DeviceName}`)
 	}
 
 	PowerOff(){
-		throw new Error("PowerOff not implemented for " + this.DeviceName)
+		throw new Error(`PowerOff not implemented for ${this.DeviceName}`)
 	}
 	
 	GetStatus(){
-		throw new Error("GetStatus not implemented for " + this.DeviceName)
+		throw new Error(`GetStatus not implemented for ${this.DeviceName}`)
 	}
 }
 
@@ -56,7 +56,7 @@ class RokuTV extends TV {
 	PowerOn(cb, retries=5){
 		let TVOBJ = this
 		let stopwatch = new Timer()
-		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
+		return axios.post(`http://${this.IP}:8060/keypress/PowerOn`)
 		.then(function (res){
 			if(res.status == 200){
 				TVOBJ.powerState = 1
@@ -86,7 +86,7 @@ class RokuTV extends TV {
 			} else {
 				console.log(":13:")
 				console.log(err)
-				throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
+				throw new Error(`Failed to turn on TV ${TVOBJ.DeviceName} - max retries reached`)
 			}
 		}).finally(function(){
 			if(cb && cb.send){
@@ -97,7 +97,7 @@ class RokuTV extends TV {
 	
 	LaunchApp(appID, retries=5){
 		let TVOBJ = this
-		return axios.post('http://'+this.IP+':8060/launch/'+appID)
+		return axios.post(`http://${this.IP}:8060/launch/${appID}`)
 		.then(function (res){
 			if(res.status == 200 || res.status == 204){
 				return 1
@@ -111,7 +111,7 @@ class RokuTV extends TV {
 				} else {
 					console.log(":14:")
 					console.log(err)
-					throw new Error("Failed to launch app on device "+TVOBJ.DeviceName+" - max retries reached")
+					throw new Error(`Failed to launch app on device ${TVOBJ.DeviceName} - max retries reached`)
 				}
 		})
 	}
@@ -119,7 +119,7 @@ class RokuTV extends TV {
 	PowerOff(cb, retries=5){
 		let TVOBJ = this
 		let stopwatch = new Timer()
-		return axios.post('http://'+this.IP+':8060/keypress/PowerOff')
+		return axios.post(`http://${this.IP}:8060/keypress/PowerOff`)
 		.then(function (res){
 			if(res.status == 200 || res.status == 202){
 				TVOBJ.powerState = 0
@@ -134,7 +134,7 @@ class RokuTV extends TV {
 			} else {
 				console.log(":15:")
 				console.log(err)
-				throw new Error("Failed to turn off TV "+TVOBJ.DeviceName+" - max retries reached")
+				throw new Error(`Failed to turn off TV ${TVOBJ.DeviceName} - max retries reached`)
 			}
 		}).finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
@@ -145,7 +145,7 @@ class RokuTV extends TV {
 		let stopwatch = new Timer()
 		let TVOBJ = this
 		let err_indicator = false
-		return axios.get('http://'+this.IP+':8060/query/device-info')
+		return axios.get(`http://${this.IP}:8060/query/device-info`)
 		.then(function (res){
 			if(res.status == 200){
 				if(res.data.includes("PowerOn")){
@@ -195,7 +195,7 @@ class VizioTV extends TV {
 		return this.GetStatus()
 		.then(function(res){
 			if(!res.powerState){
-				return axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
+				return axios.put(`https://${TVOBJ.IP}:7345/key_command/`, {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=1
@@ -223,7 +223,7 @@ class VizioTV extends TV {
 			} else {
 				console.log(":3:")
 				console.log(err)
-				throw new Error("Failed to turn on TV "+TVOBJ.DeviceName+" - max retries reached")
+				throw new Error(`Failed to turn on TV ${TVOBJ.DeviceName} - max retries reached`)
 			}
 		})
 		.finally(function(){
@@ -233,12 +233,12 @@ class VizioTV extends TV {
 	
 	LaunchApp(retries=10){
 		let TVOBJ = this
-		return axios.put('https://'+this.IP+':7345/menu_native/dynamic/tv_settings/devices/current_input', this.ChangeInputRequestData,  {headers:{"AUTH":this.AuthKey}})
+		return axios.put(`https://${this.IP}:7345/menu_native/dynamic/tv_settings/devices/current_input`, this.ChangeInputRequestData,  {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
 			if(res.status == 200){
 				return 1
 			} else {
-				throw new Error("Failed to change input for TV "+TVOBJ.DeviceName)
+				throw new Error(`Failed to change input for TV ${TVOBJ.DeviceName}`)
 			}
 		}).catch(function (err){
 			if(retries > 0){
@@ -246,7 +246,7 @@ class VizioTV extends TV {
 			} else {
 				console.log(":4:")
 				console.log(err)
-				throw new Error("Failed to change input for TV "+TVOBJ.DeviceName+" - max retries reached")
+				throw new Error(`Failed to change input for TV ${TVOBJ.DeviceName} - max retries reached`)
 			}
 		})
 	}
@@ -257,7 +257,7 @@ class VizioTV extends TV {
 		return this.GetStatus()
 		.then(function(res){
 			if(res.powerState){
-				return axios.put('https://'+TVOBJ.IP+':7345/key_command/', {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
+				return axios.put(`https://${TVOBJ.IP}:7345/key_command/`, {"KEYLIST": [{"CODESET": 11,"CODE": 0,"ACTION":"KEYPRESS"}]},  {headers:{"AUTH":TVOBJ.AuthKey}})
 				.then(function (res){
 					if(res.status == 200){
 						TVOBJ.powerState=0
@@ -291,7 +291,7 @@ class VizioTV extends TV {
 	GetStatus(cb){
 		let TVOBJ = this
 		let stopwatch = new Timer()
-		return axios.get('https://'+this.IP+':7345/state/device/power_mode', {headers:{"AUTH":this.AuthKey}})
+		return axios.get(`https://${this.IP}:7345/state/device/power_mode`, {headers:{"AUTH":this.AuthKey}})
 		.then(function (res){
 			if(res.status == 200){
 				if(res.data.ITEMS[0].VALUE==1){
@@ -361,7 +361,7 @@ class AndroidTV extends TV {
 					if(retries>0 || res === true){
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
-						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + res)
+						throw new Error(`Could not connect to ${TVOBJ.DeviceName} after retries. \n${res}`)
 					}
 				})
 				.catch(function(err){
@@ -375,7 +375,7 @@ class AndroidTV extends TV {
 						} else {
 							console.log(":22:")
 							console.log(err)
-							throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + err)
+							throw new Error(`Could not connect to ${TVOBJ.DeviceName} after retries. \n${err}`)
 						}
 					}
 				})
@@ -391,13 +391,13 @@ class AndroidTV extends TV {
 			console.log(err)
 			
 			if(err.stderr && (err.stderr.includes("device unauthorized") || err.stderr.includes("failed to authenticate"))){
-				throw new Error("The server is not authorized to send commands to "+TVOBJ.DeviceName+". Please reconfigure the device.")
+				throw new Error(`The server is not authorized to send commands to ${TVOBJ.DeviceName}. Please reconfigure the device.`)
 			}
 			else if(retries > 0 && !err.message.includes("after retries.")){
 				return TVOBJ.DeviceConnect(retries-1)
 			} else {
 				TVOBJ.connected=false
-				throw new Error("Failed to connect to TV " + TVOBJ.DeviceName + " after retries.")
+				throw new Error(`Failed to connect to TV ${TVOBJ.DeviceName} after retries.`)
 			}
 		});
 	}
@@ -438,7 +438,7 @@ class AndroidTV extends TV {
 			})
 		} 
 		else if(retries>0) {
-			console.log(TVOBJ.DeviceName + " is not Connected. Attempting Reconnect")
+			console.log(`${TVOBJ.DeviceName} is not Connected. Attempting Reconnect`)
 			return TVOBJ.DeviceConnect()
 			.then(function(){
 				return TVOBJ.GetStatus(cb, retries-1)
@@ -471,7 +471,7 @@ class AndroidTV extends TV {
 			})
 			
 		} else {
-			console.log("GetStatus failed on " + TVOBJ.DeviceName + " after retries.")
+			console.log(`GetStatus failed on ${TVOBJ.DeviceName} after retries.`)
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})}
 			throw new Error({name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()})
 		}
@@ -575,7 +575,7 @@ class ControlArea {
 			
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
-				console.log("Connection to " + err.address + ":" + err.port + " timed out")
+				console.log(`Connection to ${err.address}:${err.port} timed out`)
 			} 
 			else if(err.code == 'ECONNRESET'){
 				console.log("Connection failed - Socket Hung Up")
@@ -601,7 +601,7 @@ class ControlArea {
 			
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
-				console.log("Connection to " + err.address + ":" + err.port + " timed out")
+				console.log(`Connection to ${err.address}:${err.port} timed out`)
 			} 
 			else if(err.code == 'ECONNRESET'){
 				console.log("Connection failed - Socket Hung Up")
@@ -628,7 +628,7 @@ class ControlArea {
 			
 		}).catch(function(err){
 			if(err.code == 'ETIMEDOUT'){
-				throw new Error("Connection to " + err.address + ":" + err.port + " timed out")
+				throw new Error(`Connection to ${err.address}:${err.port} timed out`)
 			} 
 			else if(err.code == 'ECONNRESET'){
 				throw new Error("Connection failed - Socket Hung Up")
