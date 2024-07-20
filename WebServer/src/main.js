@@ -44,23 +44,23 @@ app.post('/api/:className/:objName/:RequestType', (req, res) => {
 	let ReqType = req.params.RequestType
 	
 	
-	console.log(`[${req.ip}] Requested ${ReqType} for ${ObjClass}//${ObjName)`
+	console.log(`[${req.ip}] Requested ${ReqType} for ${ObjClass}//${ObjName}`)
 	
 	
 	TvAPI.Control[ObjClass][ObjName][ReqType](res)
 	.then(function(){
-		console.debug("[${req.ip}] Answered ${ReqType} for ${ObjClass}//${ObjName} (${stopwatch})")	
+		console.debug(`[${req.ip}] Answered ${ReqType} for ${ObjClass}//${ObjName} (${stopwatch})`)	
 	})
 	.catch(function(err){
 		console.log(err)
-		console.log("[${req.ip}] (${ObjClass}//${ObjName}) API Request Error [${ReqType}](${stopwatch})")
+		console.log(`[${req.ip}] (${ObjClass}//${ObjName}) API Request Error [${ReqType}](${stopwatch})`)
 	})
 })
 
 app.get('/resources/:resource', (req, res) => {
 	let ResourceName = req.params.resource
-	console.debug("[${req.ip}] Requested Resource ${ResourceName)`
-	res.sendFile(ResourceName, { root: __dirname}/../resources"})
+	console.debug(`[${req.ip}] Requested Resource ${ResourceName}`)
+	res.sendFile(ResourceName, { root: `${__dirname}/../resources`})
 })
 
 
