@@ -59,6 +59,7 @@ class RokuTV extends TV {
 		return axios.post('http://'+this.IP+':8060/keypress/PowerOn')
 		.then(function (res){
 			if(res.status == 200){
+				TVOBJ.powerState = 1
 				if(TVOBJ.StartupPluginID!=0){
 					return TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
 					.then(function(res){
@@ -69,8 +70,10 @@ class RokuTV extends TV {
 						console.log(err)
 						return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 					})
-				} 
-				TVOBJ.powerState = 1
+				} else {
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
+				}					
+				
 			} else if(res.status == 202){
 				return TVOBJ.PowerOn(null, retries)
 			} else {
@@ -141,6 +144,7 @@ class RokuTV extends TV {
 	GetStatus(cb){
 		let stopwatch = new Timer()
 		let TVOBJ = this
+		let err_indicator = false
 		return axios.get('http://'+this.IP+':8060/query/device-info')
 		.then(function (res){
 			if(res.status == 200){
@@ -151,11 +155,21 @@ class RokuTV extends TV {
 			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 			
 		}).catch(function(err){
-				console.log(":1:")
-				console.log(err)
-				throw new Error("Failed to get status for TV "+TVOBJ.DeviceName+" - max retries reached")
+				err_indicator = true
+				if(err.code == 'ETIMEDOUT'){
+					console.log(`Failed to get status for TV ${TVOBJ.DeviceName} - request timed out`)
+					TVOBJ.powerState = 0
+					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:err_indicator, time:stopwatch.GetTime()}
+					
+				} else {
+					console.log(":1:")
+					console.log(err)
+					throw new Error(`Failed to get status for TV ${TVOBJ.DeviceName} - max retries reached`)
+				}
+				
+				
 		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
+			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:err_indicator, time:stopwatch.GetTime()})}
 		})
 	}
 	
@@ -332,7 +346,7 @@ class AndroidTV extends TV {
 				return true
 			} else {
 				console.log("Failed to disconnect (?)")
-				throw new Error(err)
+				throw err
 			}
 		})
 	}
@@ -344,43 +358,51 @@ class AndroidTV extends TV {
 			if(res.stdout.includes("already connected ") || res.stdout.includes("failed")){
 				return TVOBJ.DeviceDisconnect()
 				.then(function(res){
-					if(retries>0){
+					if(retries>0 || res === true){
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
-						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + res.stdout)
+						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + res)
 					}
 				})
 				.catch(function(err){
-					if(retries>0){
+					if(err === true) { // I am explicitly checking if the error is 'true'. DeviceDisconnect() can error out, but in a graceful way that is without a real error. in these cases, the error will propegate but it will return `true`
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
-						console.log(":22:")
 						console.log(err)
-						throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + err.stderr)
+						console.log("5----------------------")
+						if(retries>0){
+							return TVOBJ.DeviceConnect(retries-1)
+						} else {
+							console.log(":22:")
+							console.log(err)
+							throw new Error("Could not connect to " + TVOBJ.DeviceName + " after retries.\n" + err)
+						}
 					}
 				})
 			} 
 			else {
+				console.log(`${TVOBJ.DeviceName} Connected Successfully`)
 				TVOBJ.connected=true
 				return true
 			}
 		})
 		.catch(function(err){
+			console.log(":8:")
+			console.log(err)
+			
 			if(err.stderr && (err.stderr.includes("device unauthorized") || err.stderr.includes("failed to authenticate"))){
 				throw new Error("The server is not authorized to send commands to "+TVOBJ.DeviceName+". Please reconfigure the device.")
 			}
 			else if(retries > 0 && !err.message.includes("after retries.")){
 				return TVOBJ.DeviceConnect(retries-1)
 			} else {
-				console.log(":8:")
-				console.log(err)
 				TVOBJ.connected=false
 				throw new Error("Failed to connect to TV " + TVOBJ.DeviceName + " after retries.")
 			}
 		});
 	}
 	
-	GetStatus(cb, retries=10, TVPass){
+	GetStatus(cb, retries=5, TVPass){
 		let TVOBJ = this
 		let stopwatch = new Timer()
 		if(TVPass){TVOBJ=TVPass}
@@ -419,7 +441,6 @@ class AndroidTV extends TV {
 			console.log(TVOBJ.DeviceName + " is not Connected. Attempting Reconnect")
 			return TVOBJ.DeviceConnect()
 			.then(function(){
-				console.log(TVOBJ.DeviceName +" Reconnected Successfuly")
 				return TVOBJ.GetStatus(cb, retries-1)
 				.then(function(res){
 						return res
@@ -438,7 +459,7 @@ class AndroidTV extends TV {
 						return res
 					})
 					.catch(function(err){
-						console.log(":21:")
+						console.log(":29:")
 						console.log(err)
 						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 					})
@@ -546,7 +567,7 @@ class ControlArea {
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
-			let timeStats = TimerUtils.Summarize(values.map(function(x){if(x && x.time){return x.time}else{console.log(x)};return -1}))
+			let timeStats = TimerUtils.Summarize(values.map(function(x){if(x && x.time){return x.time}else{console.log(`Promise Resolution Error: Function returned ${x}`)};return -1}))
 			console.debug(timeStats.toString())
 		
 			if(cb){ cb.send(values) }
