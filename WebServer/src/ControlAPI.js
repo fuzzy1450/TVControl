@@ -96,6 +96,9 @@ class RokuTV extends TV {
 	}
 	
 	LaunchApp(appID, retries=5){
+		if(appID==0){
+			return 1
+		}
 		let TVOBJ = this
 		return axios.post(`http://${this.IP}:8060/launch/${appID}`)
 		.then(function (res){
