@@ -556,14 +556,24 @@ class ControlArea {
 		this.TVNameList=TVNameList
 		this.TVs = []
 		for(let i in this.TVNameList){
-			this.TVs.push(AllTVs[this.TVNameList[i]])
+			let name = this.TVNameList[i]
+			if(AllTVs[name]){
+				this.TVs.push(AllTVs[name])
+			} else {
+				this.TVs.push(null)
+				console.warn(`Could not load TV ${name} into control area.`)
+			}
 		}
 	}
 	
 	PowerOn(cb){
 		let FNs = []
 		for(let i in this.TVs){
-			FNs[i]=this.TVs[i].PowerOn()
+			if(this.TVs[i]){
+				FNs[i]=this.TVs[i].PowerOn()
+			} else {
+				FNs[i] = Promise.resolve({name:this.TVNameList[i], powerState:0, ERR:true, time:-1}) // if the tv is not loaded, pass along an error
+			}
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
@@ -590,7 +600,11 @@ class ControlArea {
 	PowerOff(cb){
 		let FNs = []
 		for(let i in this.TVs){
-			FNs[i]=this.TVs[i].PowerOff()
+			if (this.TVs[i]){
+				FNs[i]=this.TVs[i].PowerOff()
+			} else {
+				FNs[i] = Promise.resolve({name:this.TVNameList[i], powerState:0, ERR:true, time:-1}) // if the tv is not loaded, pass along an error
+			}
 		}
 		return Promise.all(FNs)
 		.then(function(values) {
@@ -616,7 +630,12 @@ class ControlArea {
 	GetStatus(cb){
 		let FNs = []
 		for(let i in this.TVs){
-			FNs[i]=this.TVs[i].GetStatus()
+			if(this.TVs[i]){
+				FNs[i]=this.TVs[i].GetStatus()
+			} else {
+				FNs[i] = Promise.resolve({name:this.TVNameList[i], powerState:0, ERR:true, time:-1}) // if the tv is not loaded, pass along an error
+			}
+			
 		}	
 		return Promise.all(FNs)
 		.then(function(values) {
