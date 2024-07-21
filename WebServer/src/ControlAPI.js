@@ -152,28 +152,44 @@ class RokuTV extends TV {
 		})
 	}
 	
-	PowerOff(cb, retries=5){
+	PowerOff(cb){	// this entry function is used to define parameters that will be passed through the function
 		let TVOBJ = this
 		let stopwatch = new Timer()
-		return axios.post(`http://${this.IP}:8060/keypress/PowerOff`)
-		.then(function (res){
-			if(res.status == 200 || res.status == 202){
-				TVOBJ.powerState = 0
-				return {name:TVOBJ.DeviceName, powerState:0, time:stopwatch.GetTime()}
-			} else {
-				throw new Error(`Could not connect to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
+		return this.PowerOffWorker(cb,stopwatch,TVOBJ)
+	}
+	
+	PowerOffWorker(cb, sw, TVOBJ, retries=5){	// this might help: TVControl/docs/RK_PowerOff.png
+		return axios.post(`http://${this.IP}:8060/keypress/PowerOff`) // post-power
+		.catch(function(err){ // handle post-power failures
+			if(retries>0){
+				return PowerOffWorker(cb, sw, TVOBJ, retries-1)
+			} 
+			else {
+				console.warn(":b1:")
+				console.warn(err)
+				console.warn(`Failed to turn off TV ${TVOBJ.DeviceName} - max retries reached while toggling power`)
+				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
 			}
 		})
-		.catch(function(err){
-			if (retries>0){
-				return TVOBJ.PowerOff(null, retries-1)
-			} else {
-				console.log(":15:")
-				console.log(err)
-				throw new Error(`Failed to turn off TV ${TVOBJ.DeviceName} - max retries reached`)
+		.then(function(res){ // handle checking the status
+			if(res.ERR){ // error fallthrough
+				return res
 			}
-		}).finally(function(){
-			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})}
+			if(res.status == 200 || res.status == 202){
+				TVOBJ.powerState = 0
+				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), false)
+			} else if(retries>0){
+				return PowerOffWorker(cb, sw, TVOBJ, retries-1)
+			} else {
+				console.warn(":b3:")
+				console.warn(`Could not PowerOff to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
+				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
+			}
+		})
+		.then(function(res){ // the final block, return and callback
+			let state = res
+			if(cb){cb.send(state)}
+			return state
 		})
 	}
 
