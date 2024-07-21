@@ -44,6 +44,15 @@ class TV {
 }
 
 
+class Response {
+	constructor(DeviceName, powerState, time, ERR=false){
+		this.name = DeviceName
+		this.powerState = powerState
+		this.time = time
+		this.ERR = ERR
+	}
+}
+
 // Roku TV class
 // the 3rd argument is the id of the plugin you want the tv to launch at startup
 class RokuTV extends TV {
@@ -53,45 +62,69 @@ class RokuTV extends TV {
 		this.powerState = 0
 	}
 	
-	PowerOn(cb, retries=5){
+	PowerOn(cb){	// this entry function is used to define parameters that will be passed through the function
 		let TVOBJ = this
 		let stopwatch = new Timer()
-		return axios.post(`http://${this.IP}:8060/keypress/PowerOn`)
-		.then(function (res){
-			if(res.status == 200){
-				TVOBJ.powerState = 1
-				if(TVOBJ.StartupPluginID!=0){
-					return TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
-					.then(function(res){
-						return {name:TVOBJ.DeviceName, powerState:res, time:stopwatch.GetTime()}
-					})
-					.catch(function(err){
-						console.log(":12:")
-						console.log(err)
-						return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
-					})
-				} else {
-					return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
-				}					
-				
-			} else if(res.status == 202){
-				return TVOBJ.PowerOn(null, retries)
-			} else {
-				throw new Error(`Could not connect to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
-			}
-		})
-		.catch(function(err){
-			if (retries>0){
-				return TVOBJ.PowerOn(null, retries-1)
+		return this.PowerOnWorker(cb,stopwatch,TVOBJ)
+	}
+	
+	PowerOnWorker(cb, sw, TVOBJ, retries=5){	// this might help: TVControl/docs/RK_PowerOn.png
+		return axios.post(`http://${this.IP}:8060/keypress/PowerOn`) // Post-Power
+		.catch(function(err){ // handle post-power errors
+			if(retries>0){
+				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
 			} else {
 				console.log(":13:")
 				console.log(err)
-				throw new Error(`Failed to turn on TV ${TVOBJ.DeviceName} - max retries reached`)
+				console.log(`Failed to turn on TV ${TVOBJ.DeviceName} - max retries reached while toggling power`)
+				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
 			}
-		}).finally(function(){
-			if(cb && cb.send){
-				cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()})
+		})
+		.then(function(res){ // check the response code of the post
+			if(res.ERR) { // if there was an error with post-power, propegate it.
+				return res
 			}
+			if(res.status == 200){ // if the result was 200, 
+				TVOBJ.powerState = 1
+				return 1;
+			} else if(res.status == 202){ // if the error was 202, the TV is simply busy. Try again and remove a retry, but do not error if already out of retries.
+				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
+			} else if(retries>0){
+				console.log(`Strange response from TV ${TVOBJ.DeviceName}, code ${res.status} - attempting retry.`)
+				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
+			} else {
+				console.log(":a1:")
+				console.log(res)
+				console.log(`Could not connect to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
+				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
+			}
+		})
+		.then(function(res){ // launch the TV's app
+			if(res.ERR) { // always remember to propegate errors.
+				return res
+			}
+			return TVOBJ.LaunchApp(TVOBJ.StartupPluginID)
+		})
+		.catch(function(err){ // handle errors from launching the TV app
+			if(retries>0){
+				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
+			} else {
+				console.log(":a2:")
+				console.log(err)
+				console.log(`Failed to Power On on TV ${TVOBJ.DeviceName} - max retries reached while launching app`)
+				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
+			}
+		})
+		.then(function(res){ // the final block, return and callback
+			let state = null
+			
+			if(res.ERR){ // propegate the error through.
+				state = res
+			} else {
+				state = new Response(TVOBJ.DeviceName, 1, sw.GetTime(), false)
+			}
+			if(cb){cb.send(state)}
+			return state
 		})
 	}
 	
