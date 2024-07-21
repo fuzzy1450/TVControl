@@ -74,9 +74,9 @@ class RokuTV extends TV {
 			if(retries>0){
 				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
 			} else {
-				console.log(":13:")
-				console.log(err)
-				console.log(`Failed to turn on TV ${TVOBJ.DeviceName} - max retries reached while toggling power`)
+				console.warn(":13:")
+				console.warn(err)
+				console.warn(`Failed to turn on TV ${TVOBJ.DeviceName} - max retries reached while toggling power`)
 				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
 			}
 		})
@@ -90,12 +90,12 @@ class RokuTV extends TV {
 			} else if(res.status == 202){ // if the error was 202, the TV is simply busy. Try again and remove a retry, but do not error if already out of retries.
 				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
 			} else if(retries>0){
-				console.log(`Strange response from TV ${TVOBJ.DeviceName}, code ${res.status} - attempting retry.`)
+				console.warn(`Strange response from TV ${TVOBJ.DeviceName}, code ${res.status} - attempting retry.`)
 				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
 			} else {
-				console.log(":a1:")
-				console.log(res)
-				console.log(`Could not connect to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
+				console.warn(":a1:")
+				console.warn(res)
+				console.warn(`Could not connect to ${TVOBJ.DeviceName} - Response Code ${res.status}.`)
 				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
 			}
 		})
@@ -109,9 +109,9 @@ class RokuTV extends TV {
 			if(retries>0){
 				return TVOBJ.PowerOnWorker(cb, sw, TVOBJ, retries-1)
 			} else {
-				console.log(":a2:")
-				console.log(err)
-				console.log(`Failed to Power On on TV ${TVOBJ.DeviceName} - max retries reached while launching app`)
+				console.warn(":a2:")
+				console.warn(err)
+				console.warn(`Failed to Power On on TV ${TVOBJ.DeviceName} - max retries reached while launching app`)
 				return new Response(TVOBJ.DeviceName, 0, sw.GetTime(), true)
 			}
 		})
