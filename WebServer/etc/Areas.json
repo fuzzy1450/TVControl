@@ -5,6 +5,7 @@
 	"JacksonLeft","JacksonRight",
 	"MadisonLeft","MadisonRight",
 	"MonroeLeft","MonroeRight",
+	"ClintonLeft","ClintonRight",
 	"BoardGameWest","BoardGameEast",
 	"BowlingLeft","BowlingRight","BowlingMiddle4",
 	"FrontDesk1","FrontDesk2","FrontDesk3","FrontDesk4",
@@ -17,7 +18,8 @@
 	  "Hudson":["HudsonLeft","HudsonRight"],
 	  "Jackson":["JacksonLeft","JacksonRight"],
 	  "Madison":["MadisonLeft","MadisonRight"],
-	  "Monroe":["MonroeLeft","MonroeRight"]
+	  "Monroe":["MonroeLeft","MonroeRight"],
+	  "Clinton":["ClintonLeft","ClintonRight"]
    },
    "Rooms":{
       "BoardGame":["BoardGameWest","BoardGameEast"],

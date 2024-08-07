@@ -157,6 +157,19 @@
          "JacksonRight",
          "192.168.50.27",
          0
+      ],
+	  "ClintonLeft":[
+         "AND",
+         "ClintonLeft",
+         "192.168.50.42",
+         "54:67:E6:C5:71:A0"
+      ],
+	  "ClintonRight":[
+         "AND",
+         "ClintonRight",
+         "192.168.50.57",
+         "54:67:E6:C7:EE:53"
       ]
+      
    }
 }

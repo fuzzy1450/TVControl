@@ -165,8 +165,16 @@
 		
 			<div class="Group" id="Clinton">
 				<h2>Clinton</h2>
-				<div class="ControlPanel not_supported_Group">
-					TVs Not Supported
+				<div class="ControlPanel">
+					<button class="on_btn" onclick="apiRequest('Bays', 'Clinton', 'PowerOn')">On</button>
+					<button class="off_btn" onclick="apiRequest('Bays', 'Clinton', 'PowerOff')">Off</button>
+				</div>
+				<div class="TV-Container" style="margin-bottom: 20px;">
+					<div class="flex-row">
+						<div id="ClintonLeft" class="TV off" title="ClintonLeft">L</div>
+						<div id="ClintonProjector" class="not_supported_TV" title="ClintonProjector">Projector</div>
+						<div id="ClintonRight" class="TV off" title="ClintonRight">R</div>
+					</div>
 				</div>
 			</div>
 			
