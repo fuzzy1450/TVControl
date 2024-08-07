@@ -8,6 +8,8 @@ MadisonLeft
 MadisonRight
 MonroeLeft
 MonroeRight
+ClintonLeft
+ClintonRight
 BoardGameWest
 BoardGameEast
 BowlingLeft
