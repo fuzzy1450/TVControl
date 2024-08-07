@@ -8,10 +8,16 @@ for /f "tokens=*" %%a in (C:/RokuControl/Schedule/%day%/%mode%.txt) do (
 	
 	
 	
+	
+	
 	if %mode%==Open (
 		set command=PowerOn
-	) ELSE (
+	) 
+	if %mode%==Close (
 		set command=PowerOff
+	)
+	if %mode%==Midday (
+		set command=PowerOn
 	)
 
 

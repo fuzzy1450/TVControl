@@ -46,6 +46,28 @@ class TimeSummary{
 	}
 }
 
+class StatTracker{
+	constructor(){
+		this.TimeEntries=[]
+	}
+	
+	AddEntry(T, type=""){
+		this.TimeEntries.push({time:T, type:type})
+	}
+	
+	GetTimes(type=""){
+		return this.TimeEntries.filter((entry)=> entry.type.includes(type)).map((entry)=>entry.time)
+	}
+	
+	Summary(type=""){
+		return Summarize(this.GetTimes(type))
+	}
+	
+	toString(){
+		return `${this.Summary()}`
+	}
+	
+}
 
 function TimeToString(T){
 		let ms, s, M, H
@@ -100,3 +122,4 @@ let TimerUtils = {
 
 exports.Timer = TimeElapsed
 exports.TimerUtils = TimerUtils
+exports.StatTracker = StatTracker
