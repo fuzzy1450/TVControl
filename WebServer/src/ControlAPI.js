@@ -388,7 +388,7 @@ class AndroidTV extends TV {
 	
 	DeviceDisconnect(){
 		let TVOBJ = this 
-		return exec(`adb.exe disconnect ${TVOBJ.IP}:5555`)
+		return exec(`adb.exe disconnect ${TVOBJ.IP}`)
 		.then(function(){
 			TVOBJ.connected=false
 			return true
@@ -405,7 +405,7 @@ class AndroidTV extends TV {
 	
 	DeviceConnect(retries=1){
 		let TVOBJ = this
-		return exec(`adb.exe connect ${TVOBJ.IP}:5555`)
+		return exec(`adb.exe connect ${TVOBJ.IP}`)
 		.then(function(res){
 			if(res.stdout.includes("already connected ") || res.stdout.includes("failed")){
 				return TVOBJ.DeviceDisconnect()
@@ -472,7 +472,15 @@ class AndroidTV extends TV {
 			})
 			.catch(function(err){
 				if(retries>0){
-					return TVOBJ.GetStatus(cb, retries-1)
+					if(err.stderr.includes("not found"){
+						return TVOBJ.DeviceConnect()
+						.then(function(res)){
+							return TVOBJ.GetStatus(cb, retries-1)
+						}
+						.catch(function(err)){
+							return TVOBJ.GetStatus(cb, retries-1)
+						}
+					}
 				} else {
 					if(err.stderr && err.stderr.includes("adb.exe: device offline")){
 						console.log(`Failed to get status for device ${TVOBJ.DeviceName} - device offline.`)
