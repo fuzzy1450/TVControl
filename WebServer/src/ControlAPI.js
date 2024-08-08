@@ -472,7 +472,7 @@ class AndroidTV extends TV {
 			})
 			.catch(function(err){
 				if(retries>0){
-					if(err.stderr.includes("not found"){
+					if(err.stderr.includes("not found")){
 						return TVOBJ.DeviceConnect()
 						.then(function(res)){
 							return TVOBJ.GetStatus(cb, retries-1)
