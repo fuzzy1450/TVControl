@@ -17,3 +17,5 @@ BoardGameWest
 BoardGameEast
 HudsonLeft
 HudsonRight
+ClintonLeft
+ClintonRight

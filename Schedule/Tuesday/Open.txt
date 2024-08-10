@@ -12,3 +12,5 @@ MonroeLeft
 MonroeRight
 HudsonLeft
 HudsonRight
+ClintonLeft
+ClintonRight
