@@ -454,7 +454,7 @@ class AndroidTV extends TV {
 		});
 	}
 	
-	GetStatus(cb, retries=5, TVPass){
+	GetStatus(cb, retries=2, TVPass){
 		let TVOBJ = this
 		let stopwatch = new Timer()
 		if(TVPass){TVOBJ=TVPass}
