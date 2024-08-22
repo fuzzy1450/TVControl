@@ -475,15 +475,13 @@ class AndroidTV extends TV {
 			})
 			.catch(function(err){
 				if(retries>0){
-					if(err.stderr.includes("not found")){
-						return TVOBJ.DeviceConnect()
-						.then(function(res){
-							return TVOBJ.GetStatus(cb, retries-1)
-						})
-						.catch(function(err){
-							return TVOBJ.GetStatus(cb, retries-1)
-						})
-					}
+					return TVOBJ.DeviceConnect()
+					.then(function(res){
+						return TVOBJ.GetStatus(cb, retries-1)
+					})
+					.catch(function(err){
+						return TVOBJ.GetStatus(cb, retries-1)
+					})
 				} else {
 					if(err.stderr && err.stderr.includes("adb.exe: device offline")){
 						console.log(`Failed to get status for device ${TVOBJ.DeviceName} - device offline.`)
