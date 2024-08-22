@@ -206,7 +206,8 @@ class RokuTV extends TV {
 			}
 			return {name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, time:stopwatch.GetTime()}
 			
-		}).catch(function(err){
+		})
+		.catch(function(err){
 				err_indicator = true
 				if(err.code == 'ETIMEDOUT'){
 					console.log(`Failed to get status for TV ${TVOBJ.DeviceName} - request timed out`)
@@ -220,7 +221,8 @@ class RokuTV extends TV {
 				}
 				
 				
-		}).finally(function(){
+		})
+		.finally(function(){
 			if(cb){cb.send({name:TVOBJ.DeviceName, powerState:TVOBJ.powerState, ERR:err_indicator, time:stopwatch.GetTime()})}
 		})
 	}
@@ -397,7 +399,8 @@ class AndroidTV extends TV {
 			if(err.stderr.includes("no such device")){
 				return true
 			} else {
-				console.log("Failed to disconnect (?)")
+				console.warn("Failed to disconnect (?)")
+				console.warn(err)
 				throw err
 			}
 		})
