@@ -1,0 +1,6 @@
+8/28/2024
+	The Ping Pong North TV was not connecting, causing All//GetStatus to hang forever.
+	It was trying to connect to the guest network, unsuccessfully. 
+	Not sure why it was failing to get an IP from the guest network.
+	Had it forget the guest network and it now auto-connects to the main ssid
+	
