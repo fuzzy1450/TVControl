@@ -4,3 +4,9 @@
 	Not sure why it was failing to get an IP from the guest network.
 	Had it forget the guest network and it now auto-connects to the main ssid
 	
+9/1/2024
+	GetStatus was failing on ClintonRight
+	The error was
+		"cannot connect to 192.168.50.58:5555: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. (10060)"
+	After turning it on manually, it reconnected quickly.
+	Might need to adjust android settings to prevent adb server from going offline
