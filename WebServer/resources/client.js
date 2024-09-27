@@ -97,8 +97,14 @@ function StatusRefresh(Class,Name){
 
 function StatusRefreshTask(TVNameList, TVCount){
 	apiRequest("All", "", "GetStatus")
+	.then(()=>{
+		setTimeout( StatusRefreshTask, 45000, TVNameList, TVCount);
+	})
+	.catch((e)=>{
+		console.error("Api request failed.", {cause: e})
+		setTimeout( StatusRefreshTask, 45000, TVNameList, TVCount);
+	})
 	
-	setTimeout( StatusRefreshTask, 45000, TVNameList, TVCount );
 	
 }
 
