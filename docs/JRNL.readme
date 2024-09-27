@@ -10,3 +10,9 @@
 		"cannot connect to 192.168.50.58:5555: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. (10060)"
 	After turning it on manually, it reconnected quickly.
 	Might need to adjust android settings to prevent adb server from going offline
+
+9/27/2024 
+	GetStatus has been failing for the past month or so, finally got around to taking a look
+	PingPongNorth had failed to get a proper IP from the router. I conf'd the TV to use a static ip in addition to the existing DHCP reservation.
+	BowlingLeft was also failing to connect, from the same error. It was on the internet properly.
+		Had to turn off/on "USB Debugging" to restart the TV's adb server.
