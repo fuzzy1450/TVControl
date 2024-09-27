@@ -411,9 +411,10 @@ class AndroidTV extends TV {
 		return exec(`adb.exe connect ${TVOBJ.IP}`)
 		.then(function(res){
 			if(res.stdout.includes("already connected ") || res.stdout.includes("failed")){
+				console.log(`${TVOBJ.DeviceName} failed connection.`, res)
 				return TVOBJ.DeviceDisconnect()
 				.then(function(res){
-					if(retries>0 || res === true){
+					if(retries>0){
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
 						throw new Error(`Could not connect to ${TVOBJ.DeviceName} after retries. \n${res}`)
@@ -464,7 +465,7 @@ class AndroidTV extends TV {
 		
 		if(TVOBJ.connected){
 			let pwr = 0
-			return exec(`adb.exe -s ${this.IP}:5555 shell dumpsys power`)
+			return exec(`adb.exe -s ${TVOBJ.IP}:5555 shell dumpsys power`)
 			.then(function(res){
 				if(res.stdout.includes("Display Power: state=OFF")){
 					pwr = 0
@@ -512,7 +513,8 @@ class AndroidTV extends TV {
 						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 					})
 			})
-			.catch(function(){
+			.catch(function(e){
+				console.log(`${TVOBJ.DeviceName} has failed reconnect. ${retries} retries remaining...`)
 				if(retries > 0){
 					console.log(`Failed to reconnect to ${TVOBJ.DeviceName}. ${retries} retries remaining.`)
 					return TVOBJ.GetStatus(cb, retries-1)
