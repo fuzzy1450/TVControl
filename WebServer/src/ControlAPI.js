@@ -421,7 +421,7 @@ class AndroidTV extends TV {
 					}
 				})
 				.catch(function(err){
-					if(err === true) { // I am explicitly checking if the error is 'true'. DeviceDisconnect() can error out, but in a graceful way that is without a real error. in these cases, the error will propegate but it will return `true`
+					if(err === true && retries>0) { // I am explicitly checking if the error is 'true'. DeviceDisconnect() can error out, but in a graceful way that is without a real error. in these cases, the error will propegate but it will return `true`
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
 						console.log(err)
