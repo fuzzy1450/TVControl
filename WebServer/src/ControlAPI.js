@@ -411,7 +411,6 @@ class AndroidTV extends TV {
 		return exec(`adb.exe connect ${TVOBJ.IP}`)
 		.then(function(res){
 			if(res.stdout.includes("already connected ") || res.stdout.includes("failed")){
-				console.log(`${TVOBJ.DeviceName} failed connection.`, res)
 				return TVOBJ.DeviceDisconnect()
 				.then(function(res){
 					if(retries>0){
@@ -424,13 +423,9 @@ class AndroidTV extends TV {
 					if(err === true && retries>0) { // I am explicitly checking if the error is 'true'. DeviceDisconnect() can error out, but in a graceful way that is without a real error. in these cases, the error will propegate but it will return `true`
 						return TVOBJ.DeviceConnect(retries-1)
 					} else {
-						console.log(err)
-						console.log("5----------------------")
 						if(retries>0){
 							return TVOBJ.DeviceConnect(retries-1)
 						} else {
-							console.log(":22:")
-							console.log(err)
 							throw new Error(`Could not connect to ${TVOBJ.DeviceName} after retries. \n${err}`)
 						}
 					}
@@ -443,8 +438,6 @@ class AndroidTV extends TV {
 			}
 		})
 		.catch(function(err){
-			console.log(":8:")
-			console.log(err)
 			
 			if(err.stderr && (err.stderr.includes("device unauthorized") || err.stderr.includes("failed to authenticate"))){
 				throw new Error(`The server is not authorized to send commands to ${TVOBJ.DeviceName}. Please reconfigure the device.`)
@@ -453,6 +446,7 @@ class AndroidTV extends TV {
 				return TVOBJ.DeviceConnect(retries-1)
 			} else {
 				TVOBJ.connected=false
+				console.error(err)
 				throw new Error(`Failed to connect to TV ${TVOBJ.DeviceName} after retries.`)
 			}
 		});
@@ -476,7 +470,7 @@ class AndroidTV extends TV {
 			})
 			.catch(function(err){
 				if(retries>0){
-					return TVOBJ.DeviceConnect()
+					return TVOBJ.DeviceConnect(0)
 					.then(function(res){
 						return TVOBJ.GetStatus(cb, retries-1)
 					})
@@ -501,30 +495,34 @@ class AndroidTV extends TV {
 		} 
 		else if(retries>0) {
 			console.log(`${TVOBJ.DeviceName} is not Connected. Attempting Reconnect`)
-			return TVOBJ.DeviceConnect()
+			return TVOBJ.DeviceConnect(0)
 			.then(function(){
-				return TVOBJ.GetStatus(cb, retries-1)
-				.then(function(res){
-						return res
-					})
+				if(TVOBJ.connected) { 
+					return TVOBJ.GetStatus(cb, retries-1)
+					.then(function(res){
+							return res
+						})
 					.catch(function(err){
 						console.log(":21:")
 						console.log(err)
 						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
 					})
+				} else { 
+					if(retries > 0) {
+						return TVOBJ.GetStatus(cb, retries-1)
+					} else {
+						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+					}
+				}
 			})
 			.catch(function(e){
-				console.log(`${TVOBJ.DeviceName} has failed reconnect. ${retries} retries remaining...`)
 				if(retries > 0){
-					console.log(`Failed to reconnect to ${TVOBJ.DeviceName}. ${retries} retries remaining.`)
 					return TVOBJ.GetStatus(cb, retries-1)
 					.then(function(res){
 						return res
 					})
 					.catch(function(err){
-						console.log(":29:")
-						console.log(err)
-						return {name:TVOBJ.DeviceName, powerState:pwr, ERR:true, time:stopwatch.GetTime()}
+						return {name:TVOBJ.DeviceName, powerState:0, ERR:true, time:stopwatch.GetTime()}
 					})
 						
 						
