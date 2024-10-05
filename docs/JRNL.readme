@@ -22,3 +22,6 @@
 	https://xdaforums.com/t/solved-adb-unauthorized-no-rsa-prompt-and-no-revoke-usb-debugging-option.3693961/
 	This link seems promising. 
 	Need to get the pubkey from this server and move it onto each android TV. 
+	
+	It looks like you need to root the TVs to chmod 0644 the adb_keys file.
+	That seems to be how you stop the TVs from overwriting/clearing it. I don't want to root all the TVs.
