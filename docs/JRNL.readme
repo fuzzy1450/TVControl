@@ -16,3 +16,9 @@
 	PingPongNorth had failed to get a proper IP from the router. I conf'd the TV to use a static ip in addition to the existing DHCP reservation.
 	BowlingLeft was also failing to connect, from the same error. It was on the internet properly.
 		Had to turn off/on "USB Debugging" to restart the TV's adb server.
+
+10/4/2024
+	Need to stop devices from forgetting the authorization.
+	https://xdaforums.com/t/solved-adb-unauthorized-no-rsa-prompt-and-no-revoke-usb-debugging-option.3693961/
+	This link seems promising. 
+	Need to get the pubkey from this server and move it onto each android TV. 
