@@ -16,3 +16,6 @@ ClintonLeft
 ClintonRight
 BoardGameWest
 BoardGameEast
+PingPongNorth
+PingPongSouth
+PingPongMiddle
